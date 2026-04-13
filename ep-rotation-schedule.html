@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EP Rotation Schedule — Taichung VGH</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#1a202c;min-height:100vh;}
+.wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1rem;}
+.header{margin-bottom:1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.header-left h1{font-size:17px;font-weight:600;color:#1a3d61;margin-bottom:3px;}
+.header-left p{font-size:11px;color:#4A7BAF;}
+.sheet-btn{display:inline-flex;align-items:center;gap:5px;background:#2D5A8E;color:white;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;text-decoration:none;white-space:nowrap;}
+.sheet-btn:hover{background:#1a3d61;}
+.toolbar{display:flex;gap:7px;align-items:center;margin-bottom:1rem;flex-wrap:wrap;background:white;padding:10px 14px;border-radius:8px;border:1px solid #CBD8E5;}
+.tbtn{background:white;border:1px solid #CBD8E5;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;color:#1a202c;}
+.tbtn:hover{background:#E8EFF7;}
+.tbtn.primary{background:#2D5A8E;color:white;border-color:#2D5A8E;}
+.tbtn.primary:hover{background:#1a3d61;}
+.week-label{font-size:12px;font-weight:600;color:#1a3d61;min-width:200px;text-align:center;}
+.sched-table{width:100%;border-collapse:collapse;border:1.5px solid #CBD8E5;font-size:12px;background:white;border-radius:8px;overflow:hidden;}
+.sched-table th{background:#2D5A8E;color:white;padding:9px 10px;font-weight:500;font-size:12px;border:1px solid #1a3d61;text-align:center;white-space:nowrap;}
+.sched-table th.lh{text-align:left;}
+.sched-table td{border:1px solid #CBD8E5;vertical-align:top;padding:0;}
+.row-label{background:#EAF0F7;padding:8px 10px;font-weight:600;font-size:12px;color:#2D5A8E;white-space:nowrap;min-width:100px;}
+.row-sub{font-size:10px;color:#4A7BAF;font-weight:400;display:block;margin-top:2px;}
+.row-sub.green{color:#2E7D32;}
+.dstrip{font-size:10px;color:#4A7BAF;padding:3px 9px;border-bottom:1px solid #CBD8E5;}
+.dstrip.mon{background:#E8EFF7;}
+.dstrip.tue{background:#EAF0F7;}
+.dstrip.thu{background:#EEF4FB;}
+.cell{background:#F7FAFC;padding:7px 9px;}
+.cell.hol{background:#FFF8F0;}
+.cell.nobody{background:#F5F5F3;}
+.cell.cur{background:#EEF4FB;}
+.cell.thu-cell{background:#F0F4F8;}
+.dbadge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500;margin-bottom:4px;}
+.b-hol{background:#FDEBD0;color:#8B5A00;border:1px solid #F0C080;}
+.b-none{background:#EBEBEB;color:#555;border:1px solid #CCC;}
+.b-vgh{background:#DDEEFF;color:#1a3d61;border:1px solid #8ABBE0;}
+.b-carried{background:#E8F5E9;color:#1B5E20;border:1px solid #81C784;}
+.b-unset{font-size:11px;color:#999;font-style:italic;}
+.cfoot{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap;}
+.cedit{background:none;border:1px solid #CBD8E5;border-radius:5px;padding:1px 7px;font-size:10px;cursor:pointer;color:#4A7BAF;}
+.cedit:hover{background:#E8EFF7;}
+.creset{background:none;border:none;font-size:10px;cursor:pointer;color:#A32D2D;}
+.creset:hover{text-decoration:underline;}
+.mdot{width:6px;height:6px;border-radius:50%;background:#BA7517;display:inline-block;}
+.cdot{width:6px;height:6px;border-radius:50%;background:#388E3C;display:inline-block;}
+.ceditor{display:flex;flex-direction:column;gap:5px;margin-bottom:4px;}
+.chips{display:flex;gap:4px;flex-wrap:wrap;}
+.chip{padding:3px 10px;border-radius:12px;font-size:11px;cursor:pointer;border:1px solid #CBD8E5;background:#F0F4F8;color:#1a202c;}
+.chip:hover{border-color:#B8CDE0;}
+.chip.sel{border:1.5px solid #2D5A8E;background:#E8EFF7;color:#2D5A8E;}
+.chip.hchip{background:#FDEBD0;color:#8B5A00;border-color:#F0C080;}
+.chip.nchip{background:#EBEBEB;color:#555;border-color:#CCC;}
+.ccancel{background:none;border:1px solid #CBD8E5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;color:#666;}
+.crst2{background:none;border:none;font-size:10px;cursor:pointer;color:#A32D2D;}
+.cnum{display:flex;align-items:center;gap:6px;margin-top:6px;border-top:1px dashed #CBD8E5;padding-top:5px;}
+.cnum label{font-size:10px;color:#4A7BAF;white-space:nowrap;}
+.cnum input{border:1px solid #CBD8E5;border-radius:5px;padding:3px 7px;font-size:12px;background:white;color:#1a202c;flex:1;min-width:0;}
+.cnum input:focus{outline:none;border-color:#2D5A8E;}
+.ctoggle{display:flex;align-items:center;justify-content:space-between;margin-top:6px;border-top:1px dashed #CBD8E5;padding-top:5px;}
+.togglebtn{background:none;border:1px solid #CBD8E5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;color:#4A7BAF;}
+.togglebtn:hover{background:#E8EFF7;}
+.addbtn{background:#2D5A8E;color:white;border:none;border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;}
+.addbtn:hover{background:#1a3d61;}
+.cpanel{margin-top:5px;}
+.citem{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 16px;gap:3px;margin-bottom:3px;align-items:center;}
+.citem input{border:1px solid #CBD8E5;border-radius:4px;padding:2px 4px;font-size:11px;background:white;color:#1a202c;width:100%;}
+.citem input:focus{outline:none;border-color:#2D5A8E;}
+.chds{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 16px;gap:3px;margin-bottom:2px;}
+.chds span{font-size:10px;color:#4A7BAF;font-weight:500;}
+.delc{background:none;border:none;cursor:pointer;color:#aaa;font-size:11px;}
+.delc:hover{color:#A32D2D;}
+/* Modals */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;}
+.mo.open{display:flex;}
+.mbox{background:white;border-radius:10px;border:1.5px solid #CBD8E5;padding:1.5rem;width:380px;max-width:94vw;box-shadow:0 8px 32px rgba(45,90,142,.15);}
+.mbox h3{font-size:15px;font-weight:600;margin-bottom:.75rem;color:#2D5A8E;}
+.msub{font-size:12px;color:#666;margin-bottom:1rem;}
+.lrow{display:flex;gap:8px;margin-bottom:.75rem;}
+.lrow input{flex:1;border:1px solid #CBD8E5;border-radius:6px;padding:7px 10px;font-size:13px;background:white;color:#1a202c;}
+.lrow input:focus{outline:none;border-color:#2D5A8E;}
+.lbtn{background:#2D5A8E;color:white;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;}
+.lbtn:hover{background:#1a3d61;}
+.lres{background:#E8EFF7;border:1px solid #B8CDE0;border-radius:6px;padding:10px 12px;margin-bottom:.75rem;font-size:12px;line-height:1.8;}
+.lres b{color:#2D5A8E;}
+.lerr{color:#A32D2D;font-size:12px;margin-bottom:.75rem;}
+.catrow{display:flex;align-items:center;gap:8px;margin-bottom:.75rem;}
+.catrow label{font-size:12px;color:#666;white-space:nowrap;}
+.catrow select{flex:1;border:1px solid #CBD8E5;border-radius:6px;padding:5px 8px;font-size:12px;background:white;color:#1a202c;}
+.mact{display:flex;gap:8px;justify-content:flex-end;}
+.bcancelm{background:none;border:1px solid #CBD8E5;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:#666;}
+.bconfirm{background:#2D5A8E;color:white;border:none;border-radius:6px;padding:6px 16px;font-size:12px;cursor:pointer;}
+.bconfirm:disabled{background:#B8CDE0;cursor:default;}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #B8CDE0;border-top-color:#2D5A8E;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:4px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.mgbox{background:white;border-radius:10px;border:1px solid #CBD8E5;padding:1.5rem;width:340px;max-width:92vw;box-shadow:0 8px 32px rgba(45,90,142,.15);}
+.mgbox h3{font-size:15px;font-weight:600;margin-bottom:1rem;color:#1a202c;}
+.plist{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem;}
+.prow{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:6px;background:#F7FAFC;border:1px solid #CBD8E5;}
+.pleft{display:flex;align-items:center;gap:8px;}
+.pdot{width:9px;height:9px;border-radius:50%;}
+.pname{font-size:13px;color:#1a202c;}
+.rmbtn{background:none;border:1px solid #F7C1C1;border-radius:5px;padding:2px 8px;font-size:11px;color:#A32D2D;cursor:pointer;}
+.rmbtn:hover{background:#FCEBEB;}
+.addrow{display:flex;gap:8px;margin-top:4px;}
+.addrow input{flex:1;border:1px solid #CBD8E5;border-radius:6px;padding:6px 10px;font-size:12px;background:white;color:#1a202c;}
+.addrow input:focus{outline:none;border-color:#2D5A8E;}
+.baddm{background:#2D5A8E;color:white;border:none;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;}
+.mclose{display:flex;justify-content:flex-end;margin-top:1rem;}
+.bdone{background:#F7FAFC;border:1px solid #CBD8E5;border-radius:6px;padding:6px 18px;font-size:12px;cursor:pointer;color:#1a202c;}
+.warn{font-size:12px;color:#A32D2D;margin-top:4px;min-height:14px;}
+@media print{
+  .toolbar,.cedit,.creset,.crst2,.mdot,.cdot,.addbtn,.togglebtn,.delc,.ccancel,.ceditor,.cfoot{display:none!important;}
+  body{background:white;}
+  .wrap{padding:.5rem;}
+  .sched-table{border:2px solid #CBD8E5;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="header-left">
+      <h1>Taichung Veterans General Hospital — EP Rotation Schedule</h1>
+      <p>Mon &amp; Thu 07:30 EP Case Report &nbsp;·&nbsp; Tue 17:30 Rehearsal &nbsp;·&nbsp; All assignments manual &nbsp;·&nbsp; Tue selection carries to next Mon</p>
+    </div>
+    <a class="sheet-btn" href="https://docs.google.com/spreadsheets/d/1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k/edit?gid=922408137#gid=922408137" target="_blank">↗ Full patient data</a>
+  </div>
+  <div class="toolbar">
+    <button class="tbtn" onclick="shiftView(-1)">← Earlier</button>
+    <span class="week-label" id="view-label"></span>
+    <button class="tbtn" onclick="shiftView(1)">Later →</button>
+    <button class="tbtn primary" onclick="window.print()" style="margin-left:auto;">🖨 Print / Save PDF</button>
+    <button class="tbtn" onclick="openMgmt()">Manage physicians</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="sched-table" id="main-table">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Lookup modal -->
+<div class="mo" id="lmo">
+  <div class="mbox">
+    <h3>Look up patient</h3>
+    <div class="msub">Enter chart number to search from Google Sheet</div>
+    <div class="lrow"><input type="text" id="linput" placeholder="Chart number..."/><button class="lbtn" onclick="doLookup()">Search</button></div>
+    <div id="lstatus"></div>
+    <div id="lresult" style="display:none;"></div>
+    <div class="catrow" id="catrow" style="display:none;">
+      <label>Catheter:</label>
+      <select id="catsel"><option>--</option><option>AVNRT</option><option>AF</option><option>AFL</option><option>VT</option><option>AT</option><option>WPW</option><option>PVC</option><option>VF</option><option>Other</option></select>
+    </div>
+    <div class="mact">
+      <button class="bcancelm" onclick="closeLookup()">Cancel</button>
+      <button class="bconfirm" id="confirmbtn" disabled onclick="confirmCase()">Add case</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage modal -->
+<div class="mo" id="mgmo">
+  <div class="mgbox">
+    <h3>Manage physicians</h3>
+    <div class="plist" id="plist"></div>
+    <div class="addrow">
+      <input type="text" id="newname" placeholder="Add new physician..."/>
+      <button class="baddm" onclick="addPhysician()">Add</button>
+    </div>
+    <div class="warn" id="warn"></div>
+    <div class="mclose"><button class="bdone" onclick="closeMgmt()">Done</button></div>
+  </div>
+</div>
+
+<script>
+const PAL=[
+  {bg:'#DDEEFF',text:'#1a3d61',dot:'#2D5A8E',bd:'#8ABBE0'},
+  {bg:'#E8F5E9',text:'#1B5E20',dot:'#388E3C',bd:'#81C784'},
+  {bg:'#F3E5F5',text:'#4A148C',dot:'#7B1FA2',bd:'#CE93D8'},
+  {bg:'#FFF3E0',text:'#E65100',dot:'#F57C00',bd:'#FFCC80'},
+  {bg:'#FCE4EC',text:'#880E4F',dot:'#C2185B',bd:'#F48FB1'},
+];
+const HOL='__hol__', NONE='__none__';
+const SID='1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k', SGID='922408137';
+
+let physicians=['Ada','Naiha','VGHTPE'];
+let viewOffset=0;
+let monSel={};
+let tueSel={};
+let thuSel={};
+let editing={};
+let expanded={};
+let caseNums={};
+let thuCases={};
+let sheetRows=null, lookupTarget=null, lookupData=null;
+
+function gs(n){const i=physicians.indexOf(n);return i>=0?PAL[i%PAL.length]:PAL[0];}
+function getMon(d){const r=new Date(d);const dy=r.getDay();r.setDate(r.getDate()+(dy===0?-6:1-dy));r.setHours(0,0,0,0);return r;}
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function dk(d){return d.toISOString().slice(0,10);}
+function fmtF(d){return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+function fmtS(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+function fmtY(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+
+function getMonVal(mon){
+  const monKey=dk(mon);
+  if(monSel[monKey]!==undefined) return {v:monSel[monKey],src:'manual'};
+  const prevTueKey=dk(addDays(mon,-6));
+  if(tueSel[prevTueKey]!==undefined) return {v:tueSel[prevTueKey],src:'carried'};
+  return {v:null,src:'unset'};
+}
+
+function badge(val,src){
+  if(val===HOL) return '<span class="dbadge b-hol">🏖 Holiday</span>';
+  if(val===NONE) return '<span class="dbadge b-none">— No session</span>';
+  if(!val) return '<span class="b-unset">Not set — click Edit</span>';
+  if(src==='carried') return `<span class="dbadge b-carried">${val}</span>`;
+  if(val==='VGHTPE') return '<span class="dbadge b-vgh">VGHTPE</span>';
+  const s=gs(val);
+  return `<span class="dbadge" style="background:${s.bg};color:${s.text};border:1px solid ${s.bd};">${val}</span>`;
+}
+
+function chipEd(ekey,curVal,applyFn,clearFn){
+  const chips=physicians.map(p=>{
+    const s=gs(p);const sel=curVal===p;
+    return `<span class="chip${sel?' sel':''}" style="${sel?'':`background:${s.bg};color:${s.text};border-color:${s.bd};`}" onclick="${applyFn}('${ekey}','${p}')">${p}</span>`;
+  }).join('');
+  return `<div class="ceditor">
+    <div class="chips">${chips}
+      <span class="chip hchip${curVal===HOL?' sel':''}" onclick="${applyFn}('${ekey}','${HOL}')">🏖 Holiday</span>
+      <span class="chip nchip${curVal===NONE?' sel':''}" onclick="${applyFn}('${ekey}','${NONE}')">— No session</span>
+    </div>
+    <div style="display:flex;gap:5px;margin-top:3px;">
+      ${clearFn?`<span class="crst2" onclick="${clearFn}('${ekey}')">↺ Clear</span>`:''}
+      <span class="ccancel" onclick="cancelEdit('${ekey}')">Cancel</span>
+    </div>
+  </div>`;
+}
+
+function cnumHtml(ck){
+  const v=caseNums[ck]||'';
+  return `<div class="cnum"><label>Case no.</label><input placeholder="Chart number..." value="${v}" oninput="caseNums['${ck}']=this.value"/></div>`;
+}
+
+function getThuArr(ck){if(!thuCases[ck])thuCases[ck]=[];return thuCases[ck];}
+function addThuC(ck,d){getThuArr(ck).push(d||{name:'',number:'',diagnosis:'',attending:''});render();}
+function rmThuC(ck,i){getThuArr(ck).splice(i,1);render();}
+function updThuC(ck,i,f,v){getThuArr(ck)[i][f]=v;}
+
+function thuPanel(ck){
+  const rows=getThuArr(ck);
+  if(!rows.length) return '<div style="font-size:11px;color:#999;font-style:italic;">No cases yet.</div>';
+  return `<div class="chds"><span>Name</span><span>Number</span><span>Diagnosis</span><span>Attending</span><span></span></div>`+
+    rows.map((c,i)=>`<div class="citem">
+      <input value="${c.name||''}" placeholder="Name" oninput="updThuC('${ck}',${i},'name',this.value)"/>
+      <input value="${c.number||''}" placeholder="ID" oninput="updThuC('${ck}',${i},'number',this.value)"/>
+      <input value="${c.diagnosis||''}" placeholder="Dx" oninput="updThuC('${ck}',${i},'diagnosis',this.value)"/>
+      <input value="${c.attending||''}" placeholder="Attending" oninput="updThuC('${ck}',${i},'attending',this.value)"/>
+      <button class="delc" onclick="rmThuC('${ck}',${i})">✕</button>
+    </div>`).join('');
+}
+
+function toggleExp(ck){expanded[ck]=!expanded[ck];render();}
+
+function monCell(mon,isCur){
+  const monKey=dk(mon);
+  const {v,src}=getMonVal(mon);
+  const isSpec=v===HOL||v===NONE;
+  const isEdit=editing['mon-'+monKey];
+  let doc=isEdit
+    ?chipEd('mon-'+monKey,v,'applyMon','clearMon')
+    :`${badge(v,src)}<div class="cfoot">
+        ${src==='manual'?`<span class="creset" onclick="clearMon('mon-${monKey}')">↺</span><span class="mdot"></span>`:''}
+        ${src==='carried'?`<span class="cdot"></span><span style="font-size:10px;color:#2E7D32;">from Tue</span>`:''}
+        <button class="cedit" onclick="startEdit('mon-${monKey}')">Edit</button>
+      </div>`;
+  return `<div class="cell${isCur?' cur':''}${v===HOL?' hol':v===NONE?' nobody':''}">
+    ${doc}${(!isSpec&&!isEdit)?cnumHtml('mn-cases-'+monKey):''}
+  </div>`;
+}
+
+function tueCell(mon){
+  const tue=addDays(mon,1);
+  const tueKey=dk(tue);
+  const nextMon=addDays(mon,7);
+  const v=tueSel[tueKey]!==undefined?tueSel[tueKey]:null;
+  const isSpec=v===HOL||v===NONE;
+  const isEdit=editing['tue-'+tueKey];
+  let doc=isEdit
+    ?chipEd('tue-'+tueKey,v,'applyTue','clearTue')
+    :`${badge(v,'')}<div class="cfoot">
+        ${v!==null?`<span class="creset" onclick="clearTue('tue-${tueKey}')">↺</span>`:''}
+        <button class="cedit" onclick="startEdit('tue-${tueKey}')">Edit</button>
+      </div>
+      ${v&&!isSpec?`<div style="font-size:10px;color:#2E7D32;margin-top:3px;">↓ Mon ${fmtS(nextMon)}: ${v}</div>`:''}`;
+  return `<div class="cell${v===HOL?' hol':v===NONE?' nobody':''}">
+    ${doc}${(!isSpec&&!isEdit&&v)?cnumHtml('tu-cases-'+tueKey):''}
+  </div>`;
+}
+
+function thuCell(mon,isCur){
+  const thu=addDays(mon,3);
+  const thuKey=dk(thu);
+  const ck='thc-'+thuKey;
+  const v=thuSel[thuKey]!==undefined?thuSel[thuKey]:'VGHTPE';
+  const isSpec=v===HOL||v===NONE;
+  const isEdit=editing['thu-'+thuKey];
+  const count=getThuArr(ck).length;
+  const open=expanded[ck];
+  let doc=isEdit
+    ?chipEd('thu-'+thuKey,v,'applyThu',thuSel[thuKey]!==undefined?'clearThu':null)
+    :`${badge(v,'')}<div class="cfoot">
+        ${thuSel[thuKey]!==undefined?`<span class="creset" onclick="clearThu('thu-${thuKey}')">↺</span><span class="mdot"></span>`:''}
+        <button class="cedit" onclick="startEdit('thu-${thuKey}')">Edit</button>
+      </div>`;
+  let cases=isSpec?'':(`<div class="ctoggle">
+    <button class="togglebtn" onclick="toggleExp('${ck}')">${open?'▾':'▸'} Cases${count?' ('+count+')':''}</button>
+    <button class="addbtn" onclick="openLookup('${ck}')">+ Add</button>
+  </div>${open?`<div class="cpanel">${thuPanel(ck)}</div>`:''}`);
+  return `<div class="cell thu-cell${isCur?' cur':''}${v===HOL?' hol':v===NONE?' nobody':''}">
+    ${doc}${cases}
+  </div>`;
+}
+
+function startEdit(k){editing[k]=true;render();}
+function cancelEdit(k){delete editing[k];render();}
+function applyMon(k,v){const key=k.replace('mon-','');monSel[key]=v;delete editing[k];render();}
+function clearMon(k){const key=k.replace('mon-','');delete monSel[key];delete editing[k];render();}
+function applyTue(k,v){const key=k.replace('tue-','');tueSel[key]=v;delete editing[k];render();}
+function clearTue(k){const key=k.replace('tue-','');delete tueSel[key];delete editing[k];render();}
+function applyThu(k,v){const key=k.replace('thu-','');thuSel[key]=v;delete editing[k];render();}
+function clearThu(k){const key=k.replace('thu-','');delete thuSel[key];delete editing[k];render();}
+function shiftView(d){viewOffset+=d;editing={};render();}
+
+function render(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const curMon=getMon(today);
+  const base=addDays(curMon,viewOffset*28);
+  const weeks=Array.from({length:4},(_,w)=>addDays(base,w*7));
+  document.getElementById('view-label').textContent=`${fmtS(weeks[0])} – ${fmtY(addDays(weeks[3],6))}`;
+  const ths=weeks.map(mon=>{
+    const ic=mon.getTime()===curMon.getTime();
+    return `<th style="${ic?'background:#1a3d61;':''}font-size:11px;">${fmtS(mon)} – ${fmtS(addDays(mon,6))}</th>`;
+  }).join('');
+  document.getElementById('thead').innerHTML=`<tr><th class="lh" style="width:100px;">Session</th>${ths}</tr>`;
+  const rows=[
+    {l:'Mon 07:30',s:'EP Case Report',s2:null,fn:(mon)=>{
+      const ic=mon.getTime()===curMon.getTime();
+      return `<td style="${ic?'outline:2px solid #2D5A8E;outline-offset:-1px;':''}">
+        <div class="dstrip mon">📅 ${fmtF(mon)}</div>${monCell(mon,ic)}</td>`;
+    }},
+    {l:'Tue 17:30',s:'Rehearsal',s2:'selection → next Mon',fn:(mon)=>{
+      const tue=addDays(mon,1);
+      return `<td><div class="dstrip tue">📅 ${fmtF(tue)}</div>${tueCell(mon)}</td>`;
+    }},
+    {l:'Thu 07:30',s:'EP Case Report',s2:'VGHTPE (default)',fn:(mon)=>{
+      const ic=mon.getTime()===curMon.getTime();
+      return `<td style="${ic?'outline:2px solid #2D5A8E;outline-offset:-1px;':''}">
+        <div class="dstrip thu">📅 ${fmtF(addDays(mon,3))}</div>${thuCell(mon,ic)}</td>`;
+    }},
+  ];
+  document.getElementById('tbody').innerHTML=rows.map(r=>`<tr>
+    <td class="row-label">${r.l}<span class="row-sub">${r.s}</span>${r.s2?`<span class="row-sub green">${r.s2}</span>`:''}</td>
+    ${weeks.map(m=>r.fn(m)).join('')}
+  </tr>`).join('');
+}
+
+function openLookup(ck){
+  lookupTarget=ck;lookupData=null;
+  document.getElementById('linput').value='';
+  document.getElementById('lstatus').innerHTML='';
+  document.getElementById('lresult').style.display='none';
+  document.getElementById('catrow').style.display='none';
+  document.getElementById('catsel').value='--';
+  document.getElementById('confirmbtn').disabled=true;
+  document.getElementById('lmo').classList.add('open');
+  setTimeout(()=>document.getElementById('linput').focus(),80);
+}
+function closeLookup(){document.getElementById('lmo').classList.remove('open');}
+async function fetchSheet(){
+  if(sheetRows)return sheetRows;
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:csv&gid=${SGID}`);
+  const txt=await r.text();
+  const lines=txt.trim().split('\n');
+  const parse=l=>{const a=[];let c='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){a.push(c.trim());c='';}else c+=ch;}a.push(c.trim());return a;};
+  const hdrs=parse(lines[0]).map(h=>h.replace(/^"|"$/g,'').toLowerCase());
+  sheetRows=lines.slice(1).map(l=>{const v=parse(l);const o={};hdrs.forEach((h,i)=>o[h]=(v[i]||'').replace(/^"|"$/g,''));return o;});
+  return sheetRows;
+}
+async function doLookup(){
+  const num=document.getElementById('linput').value.trim();if(!num)return;
+  const st=document.getElementById('lstatus'),rs=document.getElementById('lresult');
+  st.innerHTML='<span class="spin"></span> Searching...';rs.style.display='none';
+  document.getElementById('catrow').style.display='none';document.getElementById('confirmbtn').disabled=true;lookupData=null;
+  try{
+    const rows=await fetchSheet();
+    const found=rows.find(r=>(Object.values(r)[2]||'').toString().trim()===num);
+    if(!found){st.innerHTML='';rs.innerHTML='<div class="lerr">No patient found.</div>';rs.style.display='block';return;}
+    const v=Object.values(found);
+    lookupData={name:v[1]||'',number:v[2]||'',diagnosis:v[3]||'',attending:v[4]||''};
+    st.innerHTML='';
+    rs.innerHTML=`<div class="lres"><b>Name:</b> ${lookupData.name}<br><b>Number:</b> ${lookupData.number}<br><b>Diagnosis:</b> ${lookupData.diagnosis}<br><b>Attending:</b> ${lookupData.attending}</div>`;
+    rs.style.display='block';document.getElementById('catrow').style.display='flex';document.getElementById('confirmbtn').disabled=false;
+  }catch(e){st.innerHTML='';rs.innerHTML='<div class="lerr">Error. Make sure the sheet is public.</div>';rs.style.display='block';}
+}
+function confirmCase(){
+  if(!lookupData||!lookupTarget)return;
+  addThuC(lookupTarget,{...lookupData,catheter:document.getElementById('catsel').value});
+  closeLookup();
+}
+document.getElementById('linput').addEventListener('keydown',e=>{if(e.key==='Enter')doLookup();});
+document.getElementById('lmo').addEventListener('click',e=>{if(e.target===document.getElementById('lmo'))closeLookup();});
+
+function renderMgmt(){
+  document.getElementById('plist').innerHTML=physicians.map((p,i)=>{
+    const s=PAL[i%PAL.length];const can=physicians.length>1;
+    return `<div class="prow"><div class="pleft"><div class="pdot" style="background:${s.dot};"></div><span class="pname">${p}</span></div>
+    ${can?`<button class="rmbtn" onclick="removeP(${i})">Remove</button>`:'<span style="font-size:10px;color:#999;">only member</span>'}</div>`;
+  }).join('');
+}
+function openMgmt(){document.getElementById('warn').textContent='';document.getElementById('newname').value='';renderMgmt();document.getElementById('mgmo').classList.add('open');}
+function closeMgmt(){document.getElementById('mgmo').classList.remove('open');render();}
+function removeP(i){
+  if(physicians.length<=1)return;
+  const n=physicians[i];physicians.splice(i,1);
+  [monSel,tueSel,thuSel].forEach(obj=>{for(const k in obj)if(obj[k]===n)delete obj[k];});
+  renderMgmt();render();
+}
+function addPhysician(){
+  const n=document.getElementById('newname').value.trim();if(!n)return;
+  if(physicians.includes(n)){document.getElementById('warn').textContent=`"${n}" already exists.`;return;}
+  physicians.push(n);document.getElementById('newname').value='';document.getElementById('warn').textContent='';renderMgmt();render();
+}
+document.getElementById('newname').addEventListener('keydown',e=>{if(e.key==='Enter')addPhysician();});
+document.getElementById('mgmo').addEventListener('click',e=>{if(e.target===document.getElementById('mgmo'))closeMgmt();});
+
+render();
+</script>
+</body>
+</html>
