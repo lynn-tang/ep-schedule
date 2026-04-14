@@ -19,6 +19,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tbtn.primary{background:#2D5A8E;color:white;border-color:#2D5A8E;}
 .tbtn.primary:hover{background:#1a3d61;}
 .week-label{font-size:12px;font-weight:600;color:#1a3d61;min-width:200px;text-align:center;}
+.sync-status{font-size:11px;padding:3px 9px;border-radius:10px;}
+.sync-ok{background:#E8F5E9;color:#2E7D32;border:1px solid #81C784;}
+.sync-ing{background:#FFF8E1;color:#F57F17;border:1px solid #FFD54F;}
+.sync-err{background:#FFEBEE;color:#C62828;border:1px solid #EF9A9A;}
 .sched-table{width:100%;border-collapse:collapse;border:1.5px solid #CBD8E5;font-size:12px;background:white;border-radius:8px;overflow:hidden;}
 .sched-table th{background:#2D5A8E;color:white;padding:9px 10px;font-weight:500;font-size:12px;border:1px solid #1a3d61;text-align:center;white-space:nowrap;}
 .sched-table th.lh{text-align:left;}
@@ -74,7 +78,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .chds span{font-size:10px;color:#4A7BAF;font-weight:500;}
 .delc{background:none;border:none;cursor:pointer;color:#aaa;font-size:11px;}
 .delc:hover{color:#A32D2D;}
-/* Modals */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;}
 .mo.open{display:flex;}
 .mbox{background:white;border-radius:10px;border:1.5px solid #CBD8E5;padding:1.5rem;width:380px;max-width:94vw;box-shadow:0 8px 32px rgba(45,90,142,.15);}
@@ -115,9 +118,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .warn{font-size:12px;color:#A32D2D;margin-top:4px;min-height:14px;}
 @media print{
   .toolbar,.cedit,.creset,.crst2,.mdot,.cdot,.addbtn,.togglebtn,.delc,.ccancel,.ceditor,.cfoot{display:none!important;}
-  body{background:white;}
-  .wrap{padding:.5rem;}
-  .sched-table{border:2px solid #CBD8E5;}
+  body{background:white;}.wrap{padding:.5rem;}
 }
 </style>
 </head>
@@ -126,15 +127,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="header">
     <div class="header-left">
       <h1>Taichung Veterans General Hospital — EP Rotation Schedule</h1>
-      <p>Mon &amp; Thu 07:30 EP Case Report &nbsp;·&nbsp; Tue 17:30 Rehearsal &nbsp;·&nbsp; All assignments manual &nbsp;·&nbsp; Tue selection carries to next Mon</p>
+      <p>Mon &amp; Thu 07:30 EP Case Report &nbsp;·&nbsp; Tue 17:30 Rehearsal &nbsp;·&nbsp; Tue selection carries to next Mon &nbsp;·&nbsp; 🔴 Real-time sync</p>
     </div>
     <a class="sheet-btn" href="https://docs.google.com/spreadsheets/d/1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k/edit?gid=922408137#gid=922408137" target="_blank">↗ Full patient data</a>
   </div>
   <div class="toolbar">
     <button class="tbtn" onclick="shiftView(-1)">← Earlier</button>
-    <span class="week-label" id="view-label"></span>
+    <span class="week-label" id="view-label">Loading...</span>
     <button class="tbtn" onclick="shiftView(1)">Later →</button>
-    <button class="tbtn primary" onclick="window.print()" style="margin-left:auto;">🖨 Print / Save PDF</button>
+    <span class="sync-status sync-ing" id="sync-status">⏳ Connecting...</span>
+    <button class="tbtn primary" onclick="window.print()" style="margin-left:8px;">🖨 Print</button>
     <button class="tbtn" onclick="openMgmt()">Manage physicians</button>
   </div>
   <div style="overflow-x:auto;">
@@ -145,7 +147,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- Lookup modal -->
 <div class="mo" id="lmo">
   <div class="mbox">
     <h3>Look up patient</h3>
@@ -164,7 +165,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- Manage modal -->
 <div class="mo" id="mgmo">
   <div class="mgbox">
     <h3>Manage physicians</h3>
@@ -178,7 +178,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,onValue,set}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyBWFd0p5NEk7sVKDNU_WS6DpE5L4LmCQa4",
+  authDomain:"ep-schedule.firebaseapp.com",
+  databaseURL:"https://ep-schedule-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"ep-schedule",
+  storageBucket:"ep-schedule.firebasestorage.app",
+  messagingSenderId:"741290577193",
+  appId:"1:741290577193:web:fcc7003468bd227e37fb38"
+};
+
+const fbApp=initializeApp(firebaseConfig);
+const db=getDatabase(fbApp);
+const dbRef=ref(db,'schedule');
+
 const PAL=[
   {bg:'#DDEEFF',text:'#1a3d61',dot:'#2D5A8E',bd:'#8ABBE0'},
   {bg:'#E8F5E9',text:'#1B5E20',dot:'#388E3C',bd:'#81C784'},
@@ -186,21 +203,51 @@ const PAL=[
   {bg:'#FFF3E0',text:'#E65100',dot:'#F57C00',bd:'#FFCC80'},
   {bg:'#FCE4EC',text:'#880E4F',dot:'#C2185B',bd:'#F48FB1'},
 ];
-const HOL='__hol__', NONE='__none__';
-const SID='1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k', SGID='922408137';
+const HOL='__hol__',NONE='__none__';
+const SID='1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k',SGID='922408137';
 
-let physicians=['Ada','Naiha','VGHTPE'];
-let viewOffset=0;
-let monSel={};
-let tueSel={};
-let thuSel={};
-let editing={};
-let expanded={};
-let caseNums={};
-let thuCases={};
-let sheetRows=null, lookupTarget=null, lookupData=null;
+let state={physicians:['Ada','Naiha','VGHTPE'],monSel:{},tueSel:{},thuSel:{},caseNums:{},thuCases:{}};
+let viewOffset=0,editing={},expanded={};
+let sheetRows=null,lookupTarget=null,lookupData=null;
+let saveTimer=null,isRemote=false;
 
-function gs(n){const i=physicians.indexOf(n);return i>=0?PAL[i%PAL.length]:PAL[0];}
+const $=id=>document.getElementById(id);
+function setSync(s){
+  const el=$('sync-status');
+  if(s==='ok'){el.className='sync-status sync-ok';el.textContent='✓ Synced';}
+  else if(s==='saving'){el.className='sync-status sync-ing';el.textContent='⏳ Saving...';}
+  else if(s==='connecting'){el.className='sync-status sync-ing';el.textContent='⏳ Connecting...';}
+  else{el.className='sync-status sync-err';el.textContent='⚠ Sync error';}
+}
+
+function save(){
+  if(isRemote)return;
+  if(saveTimer)clearTimeout(saveTimer);
+  setSync('saving');
+  saveTimer=setTimeout(()=>{
+    set(dbRef,JSON.parse(JSON.stringify(state)))
+      .then(()=>setSync('ok'))
+      .catch(()=>setSync('error'));
+  },800);
+}
+
+onValue(dbRef,snap=>{
+  const d=snap.val();
+  isRemote=true;
+  if(d){
+    state.physicians=d.physicians||['Ada','Naiha','VGHTPE'];
+    state.monSel=d.monSel||{};
+    state.tueSel=d.tueSel||{};
+    state.thuSel=d.thuSel||{};
+    state.caseNums=d.caseNums||{};
+    state.thuCases=d.thuCases||{};
+  }
+  isRemote=false;
+  setSync('ok');
+  render();
+},()=>setSync('error'));
+
+function gs(n){const i=state.physicians.indexOf(n);return i>=0?PAL[i%PAL.length]:PAL[0];}
 function getMon(d){const r=new Date(d);const dy=r.getDay();r.setDate(r.getDate()+(dy===0?-6:1-dy));r.setHours(0,0,0,0);return r;}
 function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
 function dk(d){return d.toISOString().slice(0,10);}
@@ -209,180 +256,193 @@ function fmtS(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric
 function fmtY(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 
 function getMonVal(mon){
-  const monKey=dk(mon);
-  if(monSel[monKey]!==undefined) return {v:monSel[monKey],src:'manual'};
-  const prevTueKey=dk(addDays(mon,-6));
-  if(tueSel[prevTueKey]!==undefined) return {v:tueSel[prevTueKey],src:'carried'};
-  return {v:null,src:'unset'};
+  const mk=dk(mon);
+  if(state.monSel[mk]!==undefined)return{v:state.monSel[mk],src:'manual'};
+  const ptk=dk(addDays(mon,-6));
+  if(state.tueSel[ptk]!==undefined)return{v:state.tueSel[ptk],src:'carried'};
+  return{v:null,src:'unset'};
 }
 
 function badge(val,src){
-  if(val===HOL) return '<span class="dbadge b-hol">🏖 Holiday</span>';
-  if(val===NONE) return '<span class="dbadge b-none">— No session</span>';
-  if(!val) return '<span class="b-unset">Not set — click Edit</span>';
-  if(src==='carried') return `<span class="dbadge b-carried">${val}</span>`;
-  if(val==='VGHTPE') return '<span class="dbadge b-vgh">VGHTPE</span>';
+  if(val===HOL)return'<span class="dbadge b-hol">🏖 Holiday</span>';
+  if(val===NONE)return'<span class="dbadge b-none">— No session</span>';
+  if(!val)return'<span class="b-unset">Not set — click Edit</span>';
+  if(src==='carried')return`<span class="dbadge b-carried">${val}</span>`;
+  if(val==='VGHTPE')return'<span class="dbadge b-vgh">VGHTPE</span>';
   const s=gs(val);
-  return `<span class="dbadge" style="background:${s.bg};color:${s.text};border:1px solid ${s.bd};">${val}</span>`;
+  return`<span class="dbadge" style="background:${s.bg};color:${s.text};border:1px solid ${s.bd};">${val}</span>`;
 }
 
 function chipEd(ekey,curVal,applyFn,clearFn){
-  const chips=physicians.map(p=>{
+  const chips=state.physicians.map(p=>{
     const s=gs(p);const sel=curVal===p;
-    return `<span class="chip${sel?' sel':''}" style="${sel?'':`background:${s.bg};color:${s.text};border-color:${s.bd};`}" onclick="${applyFn}('${ekey}','${p}')">${p}</span>`;
+    return`<span class="chip${sel?' sel':''}" style="${sel?'':`background:${s.bg};color:${s.text};border-color:${s.bd};`}" onclick="_ep.${applyFn}('${ekey}','${p}')">${p}</span>`;
   }).join('');
-  return `<div class="ceditor">
-    <div class="chips">${chips}
-      <span class="chip hchip${curVal===HOL?' sel':''}" onclick="${applyFn}('${ekey}','${HOL}')">🏖 Holiday</span>
-      <span class="chip nchip${curVal===NONE?' sel':''}" onclick="${applyFn}('${ekey}','${NONE}')">— No session</span>
-    </div>
-    <div style="display:flex;gap:5px;margin-top:3px;">
-      ${clearFn?`<span class="crst2" onclick="${clearFn}('${ekey}')">↺ Clear</span>`:''}
-      <span class="ccancel" onclick="cancelEdit('${ekey}')">Cancel</span>
-    </div>
-  </div>`;
+  return`<div class="ceditor"><div class="chips">${chips}
+    <span class="chip hchip${curVal===HOL?' sel':''}" onclick="_ep.${applyFn}('${ekey}','${HOL}')">🏖 Holiday</span>
+    <span class="chip nchip${curVal===NONE?' sel':''}" onclick="_ep.${applyFn}('${ekey}','${NONE}')">— No session</span>
+  </div>
+  <div style="display:flex;gap:5px;margin-top:3px;">
+    ${clearFn?`<span class="crst2" onclick="_ep.${clearFn}('${ekey}')">↺ Clear</span>`:''}
+    <span class="ccancel" onclick="_ep.cancelEdit('${ekey}')">Cancel</span>
+  </div></div>`;
 }
 
 function cnumHtml(ck){
-  const v=caseNums[ck]||'';
-  return `<div class="cnum"><label>Case no.</label><input placeholder="Chart number..." value="${v}" oninput="caseNums['${ck}']=this.value"/></div>`;
+  const v=state.caseNums[ck]||'';
+  return`<div class="cnum"><label>Case no.</label><input placeholder="Chart number..." value="${v}" oninput="_ep.updNum('${ck}',this.value)"/></div>`;
 }
 
-function getThuArr(ck){if(!thuCases[ck])thuCases[ck]=[];return thuCases[ck];}
-function addThuC(ck,d){getThuArr(ck).push(d||{name:'',number:'',diagnosis:'',attending:''});render();}
-function rmThuC(ck,i){getThuArr(ck).splice(i,1);render();}
-function updThuC(ck,i,f,v){getThuArr(ck)[i][f]=v;}
-
+function getThuArr(ck){if(!state.thuCases[ck])state.thuCases[ck]=[];return state.thuCases[ck];}
 function thuPanel(ck){
   const rows=getThuArr(ck);
-  if(!rows.length) return '<div style="font-size:11px;color:#999;font-style:italic;">No cases yet.</div>';
-  return `<div class="chds"><span>Name</span><span>Number</span><span>Diagnosis</span><span>Attending</span><span></span></div>`+
+  if(!rows.length)return'<div style="font-size:11px;color:#999;font-style:italic;">No cases yet.</div>';
+  return`<div class="chds"><span>Name</span><span>Number</span><span>Diagnosis</span><span>Attending</span><span></span></div>`+
     rows.map((c,i)=>`<div class="citem">
-      <input value="${c.name||''}" placeholder="Name" oninput="updThuC('${ck}',${i},'name',this.value)"/>
-      <input value="${c.number||''}" placeholder="ID" oninput="updThuC('${ck}',${i},'number',this.value)"/>
-      <input value="${c.diagnosis||''}" placeholder="Dx" oninput="updThuC('${ck}',${i},'diagnosis',this.value)"/>
-      <input value="${c.attending||''}" placeholder="Attending" oninput="updThuC('${ck}',${i},'attending',this.value)"/>
-      <button class="delc" onclick="rmThuC('${ck}',${i})">✕</button>
+      <input value="${c.name||''}" placeholder="Name" oninput="_ep.updThu('${ck}',${i},'name',this.value)"/>
+      <input value="${c.number||''}" placeholder="ID" oninput="_ep.updThu('${ck}',${i},'number',this.value)"/>
+      <input value="${c.diagnosis||''}" placeholder="Dx" oninput="_ep.updThu('${ck}',${i},'diagnosis',this.value)"/>
+      <input value="${c.attending||''}" placeholder="Attending" oninput="_ep.updThu('${ck}',${i},'attending',this.value)"/>
+      <button class="delc" onclick="_ep.rmThu('${ck}',${i})">✕</button>
     </div>`).join('');
 }
 
-function toggleExp(ck){expanded[ck]=!expanded[ck];render();}
-
 function monCell(mon,isCur){
-  const monKey=dk(mon);
-  const {v,src}=getMonVal(mon);
-  const isSpec=v===HOL||v===NONE;
-  const isEdit=editing['mon-'+monKey];
-  let doc=isEdit
-    ?chipEd('mon-'+monKey,v,'applyMon','clearMon')
+  const mk=dk(mon);const{v,src}=getMonVal(mon);
+  const isSpec=v===HOL||v===NONE;const isEdit=editing['mon-'+mk];
+  let doc=isEdit?chipEd('mon-'+mk,v,'applyMon','clearMon')
     :`${badge(v,src)}<div class="cfoot">
-        ${src==='manual'?`<span class="creset" onclick="clearMon('mon-${monKey}')">↺</span><span class="mdot"></span>`:''}
-        ${src==='carried'?`<span class="cdot"></span><span style="font-size:10px;color:#2E7D32;">from Tue</span>`:''}
-        <button class="cedit" onclick="startEdit('mon-${monKey}')">Edit</button>
-      </div>`;
-  return `<div class="cell${isCur?' cur':''}${v===HOL?' hol':v===NONE?' nobody':''}">
-    ${doc}${(!isSpec&&!isEdit)?cnumHtml('mn-cases-'+monKey):''}
+      ${src==='manual'?`<span class="creset" onclick="_ep.clearMon('mon-${mk}')">↺</span><span class="mdot"></span>`:''}
+      ${src==='carried'?`<span class="cdot"></span><span style="font-size:10px;color:#2E7D32;">from Tue</span>`:''}
+      <button class="cedit" onclick="_ep.startEdit('mon-${mk}')">Edit</button>
+    </div>`;
+  return`<div class="cell${isCur?' cur':''}${v===HOL?' hol':v===NONE?' nobody':''}">
+    ${doc}${(!isSpec&&!isEdit)?cnumHtml('mn-'+mk):''}
   </div>`;
 }
 
 function tueCell(mon){
-  const tue=addDays(mon,1);
-  const tueKey=dk(tue);
+  const tue=addDays(mon,1);const tk=dk(tue);
   const nextMon=addDays(mon,7);
-  const v=tueSel[tueKey]!==undefined?tueSel[tueKey]:null;
-  const isSpec=v===HOL||v===NONE;
-  const isEdit=editing['tue-'+tueKey];
-  let doc=isEdit
-    ?chipEd('tue-'+tueKey,v,'applyTue','clearTue')
+  const v=state.tueSel[tk]!==undefined?state.tueSel[tk]:null;
+  const isSpec=v===HOL||v===NONE;const isEdit=editing['tue-'+tk];
+  let doc=isEdit?chipEd('tue-'+tk,v,'applyTue','clearTue')
     :`${badge(v,'')}<div class="cfoot">
-        ${v!==null?`<span class="creset" onclick="clearTue('tue-${tueKey}')">↺</span>`:''}
-        <button class="cedit" onclick="startEdit('tue-${tueKey}')">Edit</button>
-      </div>
-      ${v&&!isSpec?`<div style="font-size:10px;color:#2E7D32;margin-top:3px;">↓ Mon ${fmtS(nextMon)}: ${v}</div>`:''}`;
-  return `<div class="cell${v===HOL?' hol':v===NONE?' nobody':''}">
-    ${doc}${(!isSpec&&!isEdit&&v)?cnumHtml('tu-cases-'+tueKey):''}
+      ${v!==null?`<span class="creset" onclick="_ep.clearTue('tue-${tk}')">↺</span>`:''}
+      <button class="cedit" onclick="_ep.startEdit('tue-${tk}')">Edit</button>
+    </div>
+    ${v&&!isSpec?`<div style="font-size:10px;color:#2E7D32;margin-top:3px;">↓ Mon ${fmtS(nextMon)}: ${v}</div>`:''}`;
+  return`<div class="cell${v===HOL?' hol':v===NONE?' nobody':''}">
+    ${doc}${(!isSpec&&!isEdit&&v)?cnumHtml('tu-'+tk):''}
   </div>`;
 }
 
 function thuCell(mon,isCur){
-  const thu=addDays(mon,3);
-  const thuKey=dk(thu);
-  const ck='thc-'+thuKey;
-  const v=thuSel[thuKey]!==undefined?thuSel[thuKey]:'VGHTPE';
-  const isSpec=v===HOL||v===NONE;
-  const isEdit=editing['thu-'+thuKey];
-  const count=getThuArr(ck).length;
-  const open=expanded[ck];
-  let doc=isEdit
-    ?chipEd('thu-'+thuKey,v,'applyThu',thuSel[thuKey]!==undefined?'clearThu':null)
+  const thu=addDays(mon,3);const thuK=dk(thu);const ck='thc-'+thuK;
+  const v=state.thuSel[thuK]!==undefined?state.thuSel[thuK]:'VGHTPE';
+  const isSpec=v===HOL||v===NONE;const isEdit=editing['thu-'+thuK];
+  const count=getThuArr(ck).length;const open=expanded[ck];
+  let doc=isEdit?chipEd('thu-'+thuK,v,'applyThu',state.thuSel[thuK]!==undefined?'clearThu':null)
     :`${badge(v,'')}<div class="cfoot">
-        ${thuSel[thuKey]!==undefined?`<span class="creset" onclick="clearThu('thu-${thuKey}')">↺</span><span class="mdot"></span>`:''}
-        <button class="cedit" onclick="startEdit('thu-${thuKey}')">Edit</button>
-      </div>`;
+      ${state.thuSel[thuK]!==undefined?`<span class="creset" onclick="_ep.clearThu('thu-${thuK}')">↺</span><span class="mdot"></span>`:''}
+      <button class="cedit" onclick="_ep.startEdit('thu-${thuK}')">Edit</button>
+    </div>`;
   let cases=isSpec?'':(`<div class="ctoggle">
-    <button class="togglebtn" onclick="toggleExp('${ck}')">${open?'▾':'▸'} Cases${count?' ('+count+')':''}</button>
-    <button class="addbtn" onclick="openLookup('${ck}')">+ Add</button>
+    <button class="togglebtn" onclick="_ep.togExp('${ck}')">${open?'▾':'▸'} Cases${count?' ('+count+')':''}</button>
+    <button class="addbtn" onclick="_ep.openLookup('${ck}')">+ Add</button>
   </div>${open?`<div class="cpanel">${thuPanel(ck)}</div>`:''}`);
-  return `<div class="cell thu-cell${isCur?' cur':''}${v===HOL?' hol':v===NONE?' nobody':''}">
+  return`<div class="cell thu-cell${isCur?' cur':''}${v===HOL?' hol':v===NONE?' nobody':''}">
     ${doc}${cases}
   </div>`;
 }
-
-function startEdit(k){editing[k]=true;render();}
-function cancelEdit(k){delete editing[k];render();}
-function applyMon(k,v){const key=k.replace('mon-','');monSel[key]=v;delete editing[k];render();}
-function clearMon(k){const key=k.replace('mon-','');delete monSel[key];delete editing[k];render();}
-function applyTue(k,v){const key=k.replace('tue-','');tueSel[key]=v;delete editing[k];render();}
-function clearTue(k){const key=k.replace('tue-','');delete tueSel[key];delete editing[k];render();}
-function applyThu(k,v){const key=k.replace('thu-','');thuSel[key]=v;delete editing[k];render();}
-function clearThu(k){const key=k.replace('thu-','');delete thuSel[key];delete editing[k];render();}
-function shiftView(d){viewOffset+=d;editing={};render();}
 
 function render(){
   const today=new Date();today.setHours(0,0,0,0);
   const curMon=getMon(today);
   const base=addDays(curMon,viewOffset*28);
   const weeks=Array.from({length:4},(_,w)=>addDays(base,w*7));
-  document.getElementById('view-label').textContent=`${fmtS(weeks[0])} – ${fmtY(addDays(weeks[3],6))}`;
+  $('view-label').textContent=`${fmtS(weeks[0])} – ${fmtY(addDays(weeks[3],6))}`;
   const ths=weeks.map(mon=>{
     const ic=mon.getTime()===curMon.getTime();
-    return `<th style="${ic?'background:#1a3d61;':''}font-size:11px;">${fmtS(mon)} – ${fmtS(addDays(mon,6))}</th>`;
+    return`<th style="${ic?'background:#1a3d61;':''}font-size:11px;">${fmtS(mon)} – ${fmtS(addDays(mon,6))}</th>`;
   }).join('');
-  document.getElementById('thead').innerHTML=`<tr><th class="lh" style="width:100px;">Session</th>${ths}</tr>`;
+  $('thead').innerHTML=`<tr><th class="lh" style="width:100px;">Session</th>${ths}</tr>`;
   const rows=[
     {l:'Mon 07:30',s:'EP Case Report',s2:null,fn:(mon)=>{
       const ic=mon.getTime()===curMon.getTime();
-      return `<td style="${ic?'outline:2px solid #2D5A8E;outline-offset:-1px;':''}">
+      return`<td style="${ic?'outline:2px solid #2D5A8E;outline-offset:-1px;':''}">
         <div class="dstrip mon">📅 ${fmtF(mon)}</div>${monCell(mon,ic)}</td>`;
     }},
     {l:'Tue 17:30',s:'Rehearsal',s2:'selection → next Mon',fn:(mon)=>{
-      const tue=addDays(mon,1);
-      return `<td><div class="dstrip tue">📅 ${fmtF(tue)}</div>${tueCell(mon)}</td>`;
+      return`<td><div class="dstrip tue">📅 ${fmtF(addDays(mon,1))}</div>${tueCell(mon)}</td>`;
     }},
     {l:'Thu 07:30',s:'EP Case Report',s2:'VGHTPE (default)',fn:(mon)=>{
       const ic=mon.getTime()===curMon.getTime();
-      return `<td style="${ic?'outline:2px solid #2D5A8E;outline-offset:-1px;':''}">
+      return`<td style="${ic?'outline:2px solid #2D5A8E;outline-offset:-1px;':''}">
         <div class="dstrip thu">📅 ${fmtF(addDays(mon,3))}</div>${thuCell(mon,ic)}</td>`;
     }},
   ];
-  document.getElementById('tbody').innerHTML=rows.map(r=>`<tr>
+  $('tbody').innerHTML=rows.map(r=>`<tr>
     <td class="row-label">${r.l}<span class="row-sub">${r.s}</span>${r.s2?`<span class="row-sub green">${r.s2}</span>`:''}</td>
     ${weeks.map(m=>r.fn(m)).join('')}
   </tr>`).join('');
 }
 
-function openLookup(ck){
-  lookupTarget=ck;lookupData=null;
-  document.getElementById('linput').value='';
-  document.getElementById('lstatus').innerHTML='';
-  document.getElementById('lresult').style.display='none';
-  document.getElementById('catrow').style.display='none';
-  document.getElementById('catsel').value='--';
-  document.getElementById('confirmbtn').disabled=true;
-  document.getElementById('lmo').classList.add('open');
-  setTimeout(()=>document.getElementById('linput').focus(),80);
+// All handlers exposed as _ep (works with inline onclick in innerHTML)
+window._ep={
+  startEdit(k){editing[k]=true;render();},
+  cancelEdit(k){delete editing[k];render();},
+  applyMon(k,v){state.monSel[k.replace('mon-','')]=v;delete editing[k];save();render();},
+  clearMon(k){delete state.monSel[k.replace('mon-','')];delete editing[k];save();render();},
+  applyTue(k,v){state.tueSel[k.replace('tue-','')]=v;delete editing[k];save();render();},
+  clearTue(k){delete state.tueSel[k.replace('tue-','')];delete editing[k];save();render();},
+  applyThu(k,v){state.thuSel[k.replace('thu-','')]=v;delete editing[k];save();render();},
+  clearThu(k){delete state.thuSel[k.replace('thu-','')];delete editing[k];save();render();},
+  updNum(ck,v){state.caseNums[ck]=v;save();},
+  updThu(ck,i,f,v){if(!state.thuCases[ck])state.thuCases[ck]=[];state.thuCases[ck][i][f]=v;save();},
+  rmThu(ck,i){state.thuCases[ck].splice(i,1);save();render();},
+  togExp(ck){expanded[ck]=!expanded[ck];render();},
+  openLookup(ck){
+    lookupTarget=ck;lookupData=null;
+    $('linput').value='';$('lstatus').innerHTML='';
+    $('lresult').style.display='none';$('catrow').style.display='none';
+    $('catsel').value='--';$('confirmbtn').disabled=true;
+    $('lmo').classList.add('open');
+    setTimeout(()=>$('linput').focus(),80);
+  }
+};
+
+window.shiftView=d=>{viewOffset+=d;editing={};render();};
+window.closeLookup=()=>$('lmo').classList.remove('open');
+window.closeMgmt=()=>{$('mgmo').classList.remove('open');render();};
+window.openMgmt=()=>{
+  $('warn').textContent='';$('newname').value='';
+  renderMgmt();$('mgmo').classList.add('open');
+};
+
+function renderMgmt(){
+  $('plist').innerHTML=state.physicians.map((p,i)=>{
+    const s=PAL[i%PAL.length];const can=state.physicians.length>1;
+    return`<div class="prow"><div class="pleft"><div class="pdot" style="background:${s.dot};"></div><span class="pname">${p}</span></div>
+    ${can?`<button class="rmbtn" onclick="removeP(${i})">Remove</button>`:'<span style="font-size:10px;color:#999;">only member</span>'}</div>`;
+  }).join('');
 }
-function closeLookup(){document.getElementById('lmo').classList.remove('open');}
+window.removeP=i=>{
+  if(state.physicians.length<=1)return;
+  const n=state.physicians[i];state.physicians.splice(i,1);
+  [state.monSel,state.tueSel,state.thuSel].forEach(o=>{for(const k in o)if(o[k]===n)delete o[k];});
+  save();renderMgmt();render();
+};
+window.addPhysician=()=>{
+  const n=$('newname').value.trim();if(!n)return;
+  if(state.physicians.includes(n)){$('warn').textContent=`"${n}" already exists.`;return;}
+  state.physicians.push(n);$('newname').value='';$('warn').textContent='';
+  save();renderMgmt();render();
+};
+$('newname').addEventListener('keydown',e=>{if(e.key==='Enter')window.addPhysician();});
+$('mgmo').addEventListener('click',e=>{if(e.target===$('mgmo'))window.closeMgmt();});
+$('lmo').addEventListener('click',e=>{if(e.target===$('lmo'))window.closeLookup();});
+
 async function fetchSheet(){
   if(sheetRows)return sheetRows;
   const r=await fetch(`https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:csv&gid=${SGID}`);
@@ -393,54 +453,28 @@ async function fetchSheet(){
   sheetRows=lines.slice(1).map(l=>{const v=parse(l);const o={};hdrs.forEach((h,i)=>o[h]=(v[i]||'').replace(/^"|"$/g,''));return o;});
   return sheetRows;
 }
-async function doLookup(){
-  const num=document.getElementById('linput').value.trim();if(!num)return;
-  const st=document.getElementById('lstatus'),rs=document.getElementById('lresult');
-  st.innerHTML='<span class="spin"></span> Searching...';rs.style.display='none';
-  document.getElementById('catrow').style.display='none';document.getElementById('confirmbtn').disabled=true;lookupData=null;
+window.doLookup=async()=>{
+  const num=$('linput').value.trim();if(!num)return;
+  $('lstatus').innerHTML='<span class="spin"></span> Searching...';
+  $('lresult').style.display='none';$('catrow').style.display='none';$('confirmbtn').disabled=true;lookupData=null;
   try{
     const rows=await fetchSheet();
     const found=rows.find(r=>(Object.values(r)[2]||'').toString().trim()===num);
-    if(!found){st.innerHTML='';rs.innerHTML='<div class="lerr">No patient found.</div>';rs.style.display='block';return;}
+    if(!found){$('lstatus').innerHTML='';$('lresult').innerHTML='<div class="lerr">No patient found.</div>';$('lresult').style.display='block';return;}
     const v=Object.values(found);
     lookupData={name:v[1]||'',number:v[2]||'',diagnosis:v[3]||'',attending:v[4]||''};
-    st.innerHTML='';
-    rs.innerHTML=`<div class="lres"><b>Name:</b> ${lookupData.name}<br><b>Number:</b> ${lookupData.number}<br><b>Diagnosis:</b> ${lookupData.diagnosis}<br><b>Attending:</b> ${lookupData.attending}</div>`;
-    rs.style.display='block';document.getElementById('catrow').style.display='flex';document.getElementById('confirmbtn').disabled=false;
-  }catch(e){st.innerHTML='';rs.innerHTML='<div class="lerr">Error. Make sure the sheet is public.</div>';rs.style.display='block';}
-}
-function confirmCase(){
+    $('lstatus').innerHTML='';
+    $('lresult').innerHTML=`<div class="lres"><b>Name:</b> ${lookupData.name}<br><b>Number:</b> ${lookupData.number}<br><b>Diagnosis:</b> ${lookupData.diagnosis}<br><b>Attending:</b> ${lookupData.attending}</div>`;
+    $('lresult').style.display='block';$('catrow').style.display='flex';$('confirmbtn').disabled=false;
+  }catch(e){$('lstatus').innerHTML='';$('lresult').innerHTML='<div class="lerr">Error fetching sheet.</div>';$('lresult').style.display='block';}
+};
+$('linput').addEventListener('keydown',e=>{if(e.key==='Enter')window.doLookup();});
+window.confirmCase=()=>{
   if(!lookupData||!lookupTarget)return;
-  addThuC(lookupTarget,{...lookupData,catheter:document.getElementById('catsel').value});
-  closeLookup();
-}
-document.getElementById('linput').addEventListener('keydown',e=>{if(e.key==='Enter')doLookup();});
-document.getElementById('lmo').addEventListener('click',e=>{if(e.target===document.getElementById('lmo'))closeLookup();});
-
-function renderMgmt(){
-  document.getElementById('plist').innerHTML=physicians.map((p,i)=>{
-    const s=PAL[i%PAL.length];const can=physicians.length>1;
-    return `<div class="prow"><div class="pleft"><div class="pdot" style="background:${s.dot};"></div><span class="pname">${p}</span></div>
-    ${can?`<button class="rmbtn" onclick="removeP(${i})">Remove</button>`:'<span style="font-size:10px;color:#999;">only member</span>'}</div>`;
-  }).join('');
-}
-function openMgmt(){document.getElementById('warn').textContent='';document.getElementById('newname').value='';renderMgmt();document.getElementById('mgmo').classList.add('open');}
-function closeMgmt(){document.getElementById('mgmo').classList.remove('open');render();}
-function removeP(i){
-  if(physicians.length<=1)return;
-  const n=physicians[i];physicians.splice(i,1);
-  [monSel,tueSel,thuSel].forEach(obj=>{for(const k in obj)if(obj[k]===n)delete obj[k];});
-  renderMgmt();render();
-}
-function addPhysician(){
-  const n=document.getElementById('newname').value.trim();if(!n)return;
-  if(physicians.includes(n)){document.getElementById('warn').textContent=`"${n}" already exists.`;return;}
-  physicians.push(n);document.getElementById('newname').value='';document.getElementById('warn').textContent='';renderMgmt();render();
-}
-document.getElementById('newname').addEventListener('keydown',e=>{if(e.key==='Enter')addPhysician();});
-document.getElementById('mgmo').addEventListener('click',e=>{if(e.target===document.getElementById('mgmo'))closeMgmt();});
-
-render();
+  if(!state.thuCases[lookupTarget])state.thuCases[lookupTarget]=[];
+  state.thuCases[lookupTarget].push({...lookupData,catheter:$('catsel').value});
+  save();window.closeLookup();render();
+};
 </script>
 </body>
 </html>
