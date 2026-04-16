@@ -7,45 +7,46 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#1a202c;min-height:100vh;}
-.wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1rem;}
-.header{margin-bottom:1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.header-left h1{font-size:17px;font-weight:600;color:#1a3d61;margin-bottom:3px;}
+.wrap{max-width:1100px;margin:0 auto;padding:1.25rem 1rem;}
+.header{margin-bottom:1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.header-left h1{font-size:16px;font-weight:600;color:#1a3d61;margin-bottom:2px;line-height:1.3;}
 .header-left p{font-size:11px;color:#4A7BAF;}
-.sheet-btn{display:inline-flex;align-items:center;gap:5px;background:#2D5A8E;color:white;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;text-decoration:none;white-space:nowrap;}
+.sheet-btn{display:inline-flex;align-items:center;gap:5px;background:#2D5A8E;color:white;border:none;border-radius:6px;padding:7px 13px;font-size:12px;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;}
 .sheet-btn:hover{background:#1a3d61;}
-.toolbar{display:flex;gap:7px;align-items:center;margin-bottom:1rem;flex-wrap:wrap;background:white;padding:10px 14px;border-radius:8px;border:1px solid #CBD8E5;}
-.tbtn{background:white;border:1px solid #CBD8E5;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;color:#1a202c;}
+.toolbar{display:flex;gap:6px;align-items:center;margin-bottom:1rem;background:white;padding:9px 12px;border-radius:8px;border:1px solid #CBD8E5;flex-wrap:wrap;}
+.tbtn{background:white;border:1px solid #CBD8E5;border-radius:6px;padding:5px 11px;font-size:12px;cursor:pointer;color:#1a202c;white-space:nowrap;}
 .tbtn:hover{background:#E8EFF7;}
 .tbtn.primary{background:#2D5A8E;color:white;border-color:#2D5A8E;}
 .tbtn.primary:hover{background:#1a3d61;}
-.week-label{font-size:12px;font-weight:600;color:#1a3d61;min-width:200px;text-align:center;}
-.sync-status{font-size:11px;padding:3px 9px;border-radius:10px;}
+.tbtn.accent{background:#4A7BAF;color:white;border-color:#4A7BAF;}
+.tbtn.accent:hover{background:#2D5A8E;}
+.week-label{font-size:12px;font-weight:600;color:#1a3d61;min-width:160px;text-align:center;}
+.sync-status{font-size:11px;padding:3px 8px;border-radius:10px;white-space:nowrap;}
 .sync-ok{background:#E8F5E9;color:#2E7D32;border:1px solid #81C784;}
 .sync-ing{background:#FFF8E1;color:#F57F17;border:1px solid #FFD54F;}
 .sync-err{background:#FFEBEE;color:#C62828;border:1px solid #EF9A9A;}
-.sched-table{width:100%;border-collapse:collapse;border:1.5px solid #CBD8E5;font-size:12px;background:white;border-radius:8px;overflow:hidden;}
-.sched-table th{background:#2D5A8E;color:white;padding:9px 10px;font-weight:500;font-size:12px;border:1px solid #1a3d61;text-align:center;white-space:nowrap;}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.sched-table{width:100%;border-collapse:collapse;border:1.5px solid #CBD8E5;font-size:12px;background:white;}
+.sched-table th{background:#2D5A8E;color:white;padding:8px 9px;font-weight:500;font-size:11px;border:1px solid #1a3d61;text-align:center;white-space:nowrap;}
 .sched-table th.lh{text-align:left;}
 .sched-table td{border:1px solid #CBD8E5;vertical-align:top;padding:0;}
-.row-label{background:#EAF0F7;padding:8px 10px;font-weight:600;font-size:12px;color:#2D5A8E;white-space:nowrap;min-width:100px;}
-.row-sub{font-size:10px;color:#4A7BAF;font-weight:400;display:block;margin-top:2px;}
+.row-label{background:#EAF0F7;padding:8px 9px;font-weight:600;font-size:11px;color:#2D5A8E;white-space:nowrap;min-width:90px;}
+.row-sub{font-size:10px;color:#4A7BAF;font-weight:400;display:block;margin-top:1px;}
 .row-sub.green{color:#2E7D32;}
-.dstrip{font-size:10px;color:#4A7BAF;padding:3px 9px;border-bottom:1px solid #CBD8E5;}
+.dstrip{font-size:10px;color:#4A7BAF;padding:3px 8px;border-bottom:1px solid #CBD8E5;}
 .dstrip.mon{background:#E8EFF7;}
 .dstrip.tue{background:#EAF0F7;}
 .dstrip.thu{background:#EEF4FB;}
-.cell{background:#F7FAFC;padding:7px 9px;}
+.cell{background:#F7FAFC;padding:7px 8px;}
 .cell.hol{background:#FFF8F0;}
 .cell.nobody{background:#F5F5F3;}
 .cell.cur{background:#EEF4FB;}
 .cell.thu-cell{background:#F0F4F8;}
-.dbadge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500;margin-bottom:4px;}
+.dbadge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500;margin-bottom:3px;}
 .b-hol{background:#FDEBD0;color:#8B5A00;border:1px solid #F0C080;}
 .b-none{background:#EBEBEB;color:#555;border:1px solid #CCC;}
-.b-vgh{background:#DDEEFF;color:#1a3d61;border:1px solid #8ABBE0;}
-.b-carried{background:#E8F5E9;color:#1B5E20;border:1px solid #81C784;}
 .b-unset{font-size:11px;color:#999;font-style:italic;}
-.cfoot{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap;}
+.cfoot{display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap;}
 .cedit{background:none;border:1px solid #CBD8E5;border-radius:5px;padding:1px 7px;font-size:10px;cursor:pointer;color:#4A7BAF;}
 .cedit:hover{background:#E8EFF7;}
 .creset{background:none;border:none;font-size:10px;cursor:pointer;color:#A32D2D;}
@@ -54,21 +55,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cdot{width:6px;height:6px;border-radius:50%;background:#388E3C;display:inline-block;}
 .ceditor{display:flex;flex-direction:column;gap:5px;margin-bottom:4px;}
 .chips{display:flex;gap:4px;flex-wrap:wrap;}
-.chip{padding:3px 10px;border-radius:12px;font-size:11px;cursor:pointer;border:1px solid #CBD8E5;background:#F0F4F8;color:#1a202c;}
+.chip{padding:3px 9px;border-radius:12px;font-size:11px;cursor:pointer;border:1px solid #CBD8E5;background:#F0F4F8;color:#1a202c;}
 .chip:hover{border-color:#B8CDE0;}
-.chip.sel{border:1.5px solid #2D5A8E;background:#E8EFF7;color:#2D5A8E;}
 .chip.hchip{background:#FDEBD0;color:#8B5A00;border-color:#F0C080;}
 .chip.nchip{background:#EBEBEB;color:#555;border-color:#CCC;}
 .ccancel{background:none;border:1px solid #CBD8E5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;color:#666;}
 .crst2{background:none;border:none;font-size:10px;cursor:pointer;color:#A32D2D;}
-.cnum{display:flex;align-items:center;gap:6px;margin-top:6px;border-top:1px dashed #CBD8E5;padding-top:5px;}
+.cnum{display:flex;align-items:center;gap:5px;margin-top:6px;border-top:1px dashed #CBD8E5;padding-top:5px;}
 .cnum label{font-size:10px;color:#4A7BAF;white-space:nowrap;}
-.cnum input{border:1px solid #CBD8E5;border-radius:5px;padding:3px 7px;font-size:12px;background:white;color:#1a202c;flex:1;min-width:0;}
+.cnum input{border:1px solid #CBD8E5;border-radius:5px;padding:3px 6px;font-size:12px;background:white;color:#1a202c;flex:1;min-width:0;}
 .cnum input:focus{outline:none;border-color:#2D5A8E;}
 .ctoggle{display:flex;align-items:center;justify-content:space-between;margin-top:6px;border-top:1px dashed #CBD8E5;padding-top:5px;}
-.togglebtn{background:none;border:1px solid #CBD8E5;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;color:#4A7BAF;}
+.togglebtn{background:none;border:1px solid #CBD8E5;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;color:#4A7BAF;}
 .togglebtn:hover{background:#E8EFF7;}
-.addbtn{background:#2D5A8E;color:white;border:none;border-radius:5px;padding:2px 9px;font-size:10px;cursor:pointer;}
+.addbtn{background:#2D5A8E;color:white;border:none;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;}
 .addbtn:hover{background:#1a3d61;}
 .cpanel{margin-top:5px;}
 .citem{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 16px;gap:3px;margin-bottom:3px;align-items:center;}
@@ -78,15 +78,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .chds span{font-size:10px;color:#4A7BAF;font-weight:500;}
 .delc{background:none;border:none;cursor:pointer;color:#aaa;font-size:11px;}
 .delc:hover{color:#A32D2D;}
-.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;}
 .mo.open{display:flex;}
-.mbox{background:white;border-radius:10px;border:1.5px solid #CBD8E5;padding:1.5rem;width:380px;max-width:94vw;box-shadow:0 8px 32px rgba(45,90,142,.15);}
+.mbox{background:white;border-radius:10px;border:1px solid #CBD8E5;padding:1.5rem;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(45,90,142,.15);margin:auto;}
 .mbox h3{font-size:15px;font-weight:600;margin-bottom:.75rem;color:#2D5A8E;}
 .msub{font-size:12px;color:#666;margin-bottom:1rem;}
 .lrow{display:flex;gap:8px;margin-bottom:.75rem;}
 .lrow input{flex:1;border:1px solid #CBD8E5;border-radius:6px;padding:7px 10px;font-size:13px;background:white;color:#1a202c;}
 .lrow input:focus{outline:none;border-color:#2D5A8E;}
-.lbtn{background:#2D5A8E;color:white;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;}
+.lbtn{background:#2D5A8E;color:white;border:none;border-radius:6px;padding:7px 13px;font-size:12px;cursor:pointer;}
 .lbtn:hover{background:#1a3d61;}
 .lres{background:#E8EFF7;border:1px solid #B8CDE0;border-radius:6px;padding:10px 12px;margin-bottom:.75rem;font-size:12px;line-height:1.8;}
 .lres b{color:#2D5A8E;}
@@ -100,12 +100,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .bconfirm:disabled{background:#B8CDE0;cursor:default;}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid #B8CDE0;border-top-color:#2D5A8E;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:4px;}
 @keyframes sp{to{transform:rotate(360deg);}}
-.mgbox{background:white;border-radius:10px;border:1px solid #CBD8E5;padding:1.5rem;width:340px;max-width:92vw;box-shadow:0 8px 32px rgba(45,90,142,.15);}
+.mgbox{background:white;border-radius:10px;border:1px solid #CBD8E5;padding:1.5rem;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(45,90,142,.15);margin:auto;}
 .mgbox h3{font-size:15px;font-weight:600;margin-bottom:1rem;color:#1a202c;}
 .plist{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem;}
 .prow{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:6px;background:#F7FAFC;border:1px solid #CBD8E5;}
 .pleft{display:flex;align-items:center;gap:8px;}
-.pdot{width:9px;height:9px;border-radius:50%;}
+.pdot{width:10px;height:10px;border-radius:50%;}
 .pname{font-size:13px;color:#1a202c;}
 .rmbtn{background:none;border:1px solid #F7C1C1;border-radius:5px;padding:2px 8px;font-size:11px;color:#A32D2D;cursor:pointer;}
 .rmbtn:hover{background:#FCEBEB;}
@@ -116,6 +116,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .mclose{display:flex;justify-content:flex-end;margin-top:1rem;}
 .bdone{background:#F7FAFC;border:1px solid #CBD8E5;border-radius:6px;padding:6px 18px;font-size:12px;cursor:pointer;color:#1a202c;}
 .warn{font-size:12px;color:#A32D2D;margin-top:4px;min-height:14px;}
+/* Yearly */
+.yrbox{background:white;border-radius:10px;border:1px solid #CBD8E5;padding:1.25rem;width:100%;max-width:500px;box-shadow:0 8px 32px rgba(45,90,142,.15);margin:auto;}
+.yrbox h3{font-size:15px;font-weight:600;margin-bottom:.2rem;color:#2D5A8E;}
+.yr-sub{font-size:11px;color:#4A7BAF;margin-bottom:.75rem;}
+.yr-nav{display:flex;align-items:center;gap:8px;margin-bottom:.75rem;}
+.yr-nav button{background:white;border:1px solid #CBD8E5;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:#1a202c;}
+.yr-nav button:hover{background:#E8EFF7;}
+.yr-nav span{font-size:13px;font-weight:600;color:#1a3d61;flex:1;text-align:center;}
+.yr-scroll{overflow-y:auto;max-height:60vh;border:1px solid #CBD8E5;border-radius:6px;}
+.yr-table{width:100%;border-collapse:collapse;font-size:11px;}
+.yr-table th{background:#2D5A8E;color:white;padding:6px 8px;font-weight:500;border-bottom:1px solid #1a3d61;text-align:center;position:sticky;top:0;z-index:1;}
+.yr-table th:first-child{text-align:left;}
+.yr-table td{border-bottom:1px solid #CBD8E5;padding:5px 8px;vertical-align:middle;}
+.yr-table tr:last-child td{border-bottom:none;}
+.yr-table tr:nth-child(even) td{background:#F7FAFC;}
+.yr-table td:first-child{font-weight:500;color:#2D5A8E;white-space:nowrap;background:#EAF0F7!important;min-width:90px;}
+.yr-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500;}
+.yr-unset{color:#ccc;font-size:10px;}
+.yr-cur td{background:#E8EFF7!important;}
+.yr-cur td:first-child{background:#2D5A8E!important;color:white!important;}
+.yr-close{display:flex;justify-content:flex-end;margin-top:.75rem;}
+@media(max-width:640px){
+  .header{flex-direction:column;}
+  .sheet-btn{align-self:flex-start;}
+  .toolbar{gap:5px;}
+  .week-label{min-width:110px;font-size:11px;}
+  .tbtn{padding:5px 8px;font-size:11px;}
+  .row-label{min-width:72px;padding:6px 6px;font-size:10px;}
+  .cell{padding:5px 6px;}
+  .dbadge{font-size:11px;padding:2px 7px;}
+  .citem{grid-template-columns:1fr 1fr 1fr 1fr 14px;}
+  .yrbox{padding:1rem;}
+}
 @media print{
   .toolbar,.cedit,.creset,.crst2,.mdot,.cdot,.addbtn,.togglebtn,.delc,.ccancel,.ceditor,.cfoot{display:none!important;}
   body{background:white;}.wrap{padding:.5rem;}
@@ -127,19 +160,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="header">
     <div class="header-left">
       <h1>Taichung Veterans General Hospital — EP Rotation Schedule</h1>
-      <p>Mon &amp; Thu 07:30 EP Case Report &nbsp;·&nbsp; Tue 17:30 Rehearsal &nbsp;·&nbsp; Tue selection carries to next Mon &nbsp;·&nbsp; 🔴 Real-time sync</p>
+      <p>Mon &amp; Thu 07:30 EP Case Report &nbsp;·&nbsp; Tue 17:30 Rehearsal &nbsp;·&nbsp; 🔴 Real-time sync</p>
     </div>
-    <a class="sheet-btn" href="https://docs.google.com/spreadsheets/d/1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k/edit?gid=922408137#gid=922408137" target="_blank">↗ Full patient data</a>
+    <a class="sheet-btn" href="https://docs.google.com/spreadsheets/d/1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k/edit?gid=922408137#gid=922408137" target="_blank">↗ Patient data</a>
   </div>
   <div class="toolbar">
-    <button class="tbtn" onclick="shiftView(-1)">← Earlier</button>
+    <button class="tbtn" onclick="shiftView(-1)">←</button>
     <span class="week-label" id="view-label">Loading...</span>
-    <button class="tbtn" onclick="shiftView(1)">Later →</button>
-    <span class="sync-status sync-ing" id="sync-status">⏳ Connecting...</span>
-    <button class="tbtn primary" onclick="window.print()" style="margin-left:8px;">🖨 Print</button>
-    <button class="tbtn" onclick="openMgmt()">Manage physicians</button>
+    <button class="tbtn" onclick="shiftView(1)">→</button>
+    <span class="sync-status sync-ing" id="sync-status">⏳</span>
+    <button class="tbtn accent" onclick="openYearly()">📅 Yearly</button>
+    <button class="tbtn primary" onclick="window.print()">🖨</button>
+    <button class="tbtn" onclick="openMgmt()">👥 Physicians</button>
   </div>
-  <div style="overflow-x:auto;">
+  <div class="table-wrap">
     <table class="sched-table" id="main-table">
       <thead id="thead"></thead>
       <tbody id="tbody"></tbody>
@@ -151,7 +185,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="mbox">
     <h3>Look up patient</h3>
     <div class="msub">Enter chart number to search from Google Sheet</div>
-    <div class="lrow"><input type="text" id="linput" placeholder="Chart number..."/><button class="lbtn" onclick="doLookup()">Search</button></div>
+    <div class="lrow"><input type="text" id="linput" placeholder="Chart number..." inputmode="numeric"/><button class="lbtn" onclick="doLookup()">Search</button></div>
     <div id="lstatus"></div>
     <div id="lresult" style="display:none;"></div>
     <div class="catrow" id="catrow" style="display:none;">
@@ -178,10 +212,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<div class="mo" id="yrmo">
+  <div class="yrbox">
+    <h3>📅 Yearly Overview</h3>
+    <div class="yr-sub">Mon / Tue / Thu assignments for the full year</div>
+    <div class="yr-nav">
+      <button onclick="yrShift(-1)">← Prev</button>
+      <span id="yr-label"></span>
+      <button onclick="yrShift(1)">Next →</button>
+    </div>
+    <div class="yr-scroll">
+      <table class="yr-table">
+        <thead><tr><th>Week of</th><th>Mon 07:30</th><th>Tue 17:30</th><th>Thu 07:30</th></tr></thead>
+        <tbody id="yr-tbody"></tbody>
+      </table>
+    </div>
+    <div class="yr-close"><button class="bdone" onclick="closeYearly()">Close</button></div>
+  </div>
+</div>
+
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getDatabase,ref,onValue,set}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
 const firebaseConfig={
   apiKey:"AIzaSyBWFd0p5NEk7sVKDNU_WS6DpE5L4LmCQa4",
   authDomain:"ep-schedule.firebaseapp.com",
@@ -191,63 +243,61 @@ const firebaseConfig={
   messagingSenderId:"741290577193",
   appId:"1:741290577193:web:fcc7003468bd227e37fb38"
 };
-
 const fbApp=initializeApp(firebaseConfig);
 const db=getDatabase(fbApp);
 const dbRef=ref(db,'schedule');
 
-const PAL=[
-  {bg:'#DDEEFF',text:'#1a3d61',dot:'#2D5A8E',bd:'#8ABBE0'},
-  {bg:'#E8F5E9',text:'#1B5E20',dot:'#388E3C',bd:'#81C784'},
-  {bg:'#F3E5F5',text:'#4A148C',dot:'#7B1FA2',bd:'#CE93D8'},
+// Fixed colors
+const FIXED={
+  'Ada':    {bg:'#DDEEFF',text:'#1a3d61',dot:'#2D5A8E',bd:'#8ABBE0'},
+  'Naiha':  {bg:'#E8F5E9',text:'#1B5E20',dot:'#388E3C',bd:'#81C784'},
+  'VGHTPE':{bg:'#E8EAF6',text:'#283593',dot:'#3949AB',bd:'#9FA8DA'},
+};
+const AUTO_PAL=[
   {bg:'#FFF3E0',text:'#E65100',dot:'#F57C00',bd:'#FFCC80'},
   {bg:'#FCE4EC',text:'#880E4F',dot:'#C2185B',bd:'#F48FB1'},
+  {bg:'#E0F2F1',text:'#004D40',dot:'#00897B',bd:'#80CBC4'},
+  {bg:'#F3E5F5',text:'#4A148C',dot:'#7B1FA2',bd:'#CE93D8'},
+  {bg:'#FBE9E7',text:'#BF360C',dot:'#E64A19',bd:'#FFAB91'},
 ];
-const HOL='__hol__',NONE='__none__';
-const SID='1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k',SGID='922408137';
-
-let state={physicians:['Ada','Naiha','VGHTPE'],monSel:{},tueSel:{},thuSel:{},caseNums:{},thuCases:{}};
-let viewOffset=0,editing={},expanded={};
-let sheetRows=null,lookupTarget=null,lookupData=null;
-let saveTimer=null,isRemote=false;
-
-const $=id=>document.getElementById(id);
-function setSync(s){
-  const el=$('sync-status');
-  if(s==='ok'){el.className='sync-status sync-ok';el.textContent='✓ Synced';}
-  else if(s==='saving'){el.className='sync-status sync-ing';el.textContent='⏳ Saving...';}
-  else if(s==='connecting'){el.className='sync-status sync-ing';el.textContent='⏳ Connecting...';}
-  else{el.className='sync-status sync-err';el.textContent='⚠ Sync error';}
+let autoMap={},autoIdx=0;
+function gs(n){
+  if(FIXED[n])return FIXED[n];
+  if(!autoMap[n]){autoMap[n]=AUTO_PAL[autoIdx%AUTO_PAL.length];autoIdx++;}
+  return autoMap[n];
 }
 
+const HOL='__hol__',NONE='__none__';
+const SID='1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k',SGID='922408137';
+let state={physicians:['Ada','Naiha','VGHTPE'],monSel:{},tueSel:{},thuSel:{},caseNums:{},thuCases:{}};
+let viewOffset=0,editing={},expanded={},yrOffset=0;
+let sheetRows=null,lookupTarget=null,lookupData=null,saveTimer=null,isRemote=false;
+const $=id=>document.getElementById(id);
+
+function setSync(s){
+  const el=$('sync-status');if(!el)return;
+  if(s==='ok'){el.className='sync-status sync-ok';el.textContent='✓ Synced';}
+  else if(s==='saving'){el.className='sync-status sync-ing';el.textContent='⏳ Saving...';}
+  else{el.className='sync-status sync-err';el.textContent='⚠ Error';}
+}
 function save(){
   if(isRemote)return;
   if(saveTimer)clearTimeout(saveTimer);
   setSync('saving');
   saveTimer=setTimeout(()=>{
-    set(dbRef,JSON.parse(JSON.stringify(state)))
-      .then(()=>setSync('ok'))
-      .catch(()=>setSync('error'));
+    set(dbRef,JSON.parse(JSON.stringify(state))).then(()=>setSync('ok')).catch(()=>setSync('error'));
   },800);
 }
-
 onValue(dbRef,snap=>{
-  const d=snap.val();
-  isRemote=true;
+  const d=snap.val();isRemote=true;
   if(d){
     state.physicians=d.physicians||['Ada','Naiha','VGHTPE'];
-    state.monSel=d.monSel||{};
-    state.tueSel=d.tueSel||{};
-    state.thuSel=d.thuSel||{};
-    state.caseNums=d.caseNums||{};
-    state.thuCases=d.thuCases||{};
+    state.monSel=d.monSel||{};state.tueSel=d.tueSel||{};state.thuSel=d.thuSel||{};
+    state.caseNums=d.caseNums||{};state.thuCases=d.thuCases||{};
   }
-  isRemote=false;
-  setSync('ok');
-  render();
+  isRemote=false;setSync('ok');render();
 },()=>setSync('error'));
 
-function gs(n){const i=state.physicians.indexOf(n);return i>=0?PAL[i%PAL.length]:PAL[0];}
 function getMon(d){const r=new Date(d);const dy=r.getDay();r.setDate(r.getDate()+(dy===0?-6:1-dy));r.setHours(0,0,0,0);return r;}
 function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
 function dk(d){return d.toISOString().slice(0,10);}
@@ -266,21 +316,19 @@ function getMonVal(mon){
 function badge(val,src){
   if(val===HOL)return'<span class="dbadge b-hol">🏖 Holiday</span>';
   if(val===NONE)return'<span class="dbadge b-none">— No session</span>';
-  if(!val)return'<span class="b-unset">Not set — click Edit</span>';
-  if(src==='carried')return`<span class="dbadge b-carried">${val}</span>`;
-  if(val==='VGHTPE')return'<span class="dbadge b-vgh">VGHTPE</span>';
-  const s=gs(val);
-  return`<span class="dbadge" style="background:${s.bg};color:${s.text};border:1px solid ${s.bd};">${val}</span>`;
+  if(!val)return'<span class="b-unset">Not set — Edit</span>';
+  const s=gs(val);const carried=src==='carried';
+  return`<span class="dbadge" style="background:${s.bg};color:${s.text};border:${carried?'1.5px dashed':'1px solid'} ${s.bd};">${val}</span>`;
 }
 
 function chipEd(ekey,curVal,applyFn,clearFn){
   const chips=state.physicians.map(p=>{
     const s=gs(p);const sel=curVal===p;
-    return`<span class="chip${sel?' sel':''}" style="${sel?'':`background:${s.bg};color:${s.text};border-color:${s.bd};`}" onclick="_ep.${applyFn}('${ekey}','${p}')">${p}</span>`;
+    return`<span class="chip${sel?' sel':''}" style="background:${s.bg};color:${s.text};border:${sel?'2px':'1px'} solid ${s.bd};" onclick="_ep.${applyFn}('${ekey}','${p}')">${p}</span>`;
   }).join('');
   return`<div class="ceditor"><div class="chips">${chips}
-    <span class="chip hchip${curVal===HOL?' sel':''}" onclick="_ep.${applyFn}('${ekey}','${HOL}')">🏖 Holiday</span>
-    <span class="chip nchip${curVal===NONE?' sel':''}" onclick="_ep.${applyFn}('${ekey}','${NONE}')">— No session</span>
+    <span class="chip hchip" onclick="_ep.${applyFn}('${ekey}','${HOL}')">🏖 Holiday</span>
+    <span class="chip nchip" onclick="_ep.${applyFn}('${ekey}','${NONE}')">— No session</span>
   </div>
   <div style="display:flex;gap:5px;margin-top:3px;">
     ${clearFn?`<span class="crst2" onclick="_ep.${clearFn}('${ekey}')">↺ Clear</span>`:''}
@@ -290,9 +338,8 @@ function chipEd(ekey,curVal,applyFn,clearFn){
 
 function cnumHtml(ck){
   const v=state.caseNums[ck]||'';
-  return`<div class="cnum"><label>Case no.</label><input placeholder="Chart number..." value="${v}" oninput="_ep.updNum('${ck}',this.value)"/></div>`;
+  return`<div class="cnum"><label>Case no.</label><input placeholder="Chart no." value="${v}" inputmode="numeric" oninput="_ep.updNum('${ck}',this.value)"/></div>`;
 }
-
 function getThuArr(ck){if(!state.thuCases[ck])state.thuCases[ck]=[];return state.thuCases[ck];}
 function thuPanel(ck){
   const rows=getThuArr(ck);
@@ -313,14 +360,13 @@ function monCell(mon,isCur){
   let doc=isEdit?chipEd('mon-'+mk,v,'applyMon','clearMon')
     :`${badge(v,src)}<div class="cfoot">
       ${src==='manual'?`<span class="creset" onclick="_ep.clearMon('mon-${mk}')">↺</span><span class="mdot"></span>`:''}
-      ${src==='carried'?`<span class="cdot"></span><span style="font-size:10px;color:#2E7D32;">from Tue</span>`:''}
+      ${src==='carried'?`<span class="cdot"></span><span style="font-size:10px;color:#2E7D32;">Tue→</span>`:''}
       <button class="cedit" onclick="_ep.startEdit('mon-${mk}')">Edit</button>
     </div>`;
   return`<div class="cell${isCur?' cur':''}${v===HOL?' hol':v===NONE?' nobody':''}">
     ${doc}${(!isSpec&&!isEdit)?cnumHtml('mn-'+mk):''}
   </div>`;
 }
-
 function tueCell(mon){
   const tue=addDays(mon,1);const tk=dk(tue);
   const nextMon=addDays(mon,7);
@@ -331,12 +377,11 @@ function tueCell(mon){
       ${v!==null?`<span class="creset" onclick="_ep.clearTue('tue-${tk}')">↺</span>`:''}
       <button class="cedit" onclick="_ep.startEdit('tue-${tk}')">Edit</button>
     </div>
-    ${v&&!isSpec?`<div style="font-size:10px;color:#2E7D32;margin-top:3px;">↓ Mon ${fmtS(nextMon)}: ${v}</div>`:''}`;
+    ${v&&!isSpec?`<div style="font-size:10px;color:#2E7D32;margin-top:3px;">↓ ${fmtS(nextMon)}</div>`:''}`;
   return`<div class="cell${v===HOL?' hol':v===NONE?' nobody':''}">
     ${doc}${(!isSpec&&!isEdit&&v)?cnumHtml('tu-'+tk):''}
   </div>`;
 }
-
 function thuCell(mon,isCur){
   const thu=addDays(mon,3);const thuK=dk(thu);const ck='thc-'+thuK;
   const v=state.thuSel[thuK]!==undefined?state.thuSel[thuK]:'VGHTPE';
@@ -364,19 +409,19 @@ function render(){
   $('view-label').textContent=`${fmtS(weeks[0])} – ${fmtY(addDays(weeks[3],6))}`;
   const ths=weeks.map(mon=>{
     const ic=mon.getTime()===curMon.getTime();
-    return`<th style="${ic?'background:#1a3d61;':''}font-size:11px;">${fmtS(mon)} – ${fmtS(addDays(mon,6))}</th>`;
+    return`<th style="${ic?'background:#1a3d61;':''}font-size:10px;">${fmtS(mon)}–${fmtS(addDays(mon,6))}</th>`;
   }).join('');
-  $('thead').innerHTML=`<tr><th class="lh" style="width:100px;">Session</th>${ths}</tr>`;
+  $('thead').innerHTML=`<tr><th class="lh" style="width:90px;">Session</th>${ths}</tr>`;
   const rows=[
     {l:'Mon 07:30',s:'EP Case Report',s2:null,fn:(mon)=>{
       const ic=mon.getTime()===curMon.getTime();
       return`<td style="${ic?'outline:2px solid #2D5A8E;outline-offset:-1px;':''}">
         <div class="dstrip mon">📅 ${fmtF(mon)}</div>${monCell(mon,ic)}</td>`;
     }},
-    {l:'Tue 17:30',s:'Rehearsal',s2:'selection → next Mon',fn:(mon)=>{
+    {l:'Tue 17:30',s:'Rehearsal',s2:'→ next Mon',fn:(mon)=>{
       return`<td><div class="dstrip tue">📅 ${fmtF(addDays(mon,1))}</div>${tueCell(mon)}</td>`;
     }},
-    {l:'Thu 07:30',s:'EP Case Report',s2:'VGHTPE (default)',fn:(mon)=>{
+    {l:'Thu 07:30',s:'EP Case Report',s2:'VGHTPE default',fn:(mon)=>{
       const ic=mon.getTime()===curMon.getTime();
       return`<td style="${ic?'outline:2px solid #2D5A8E;outline-offset:-1px;':''}">
         <div class="dstrip thu">📅 ${fmtF(addDays(mon,3))}</div>${thuCell(mon,ic)}</td>`;
@@ -388,7 +433,46 @@ function render(){
   </tr>`).join('');
 }
 
-// All handlers exposed as _ep (works with inline onclick in innerHTML)
+// Yearly overview
+function renderYearly(){
+  const yr=new Date().getFullYear()+yrOffset;
+  $('yr-label').textContent=String(yr);
+  const today=new Date();today.setHours(0,0,0,0);
+  const curMon=getMon(today);
+  let mon=getMon(new Date(yr,0,1));
+  if(mon.getFullYear()<yr)mon=addDays(mon,7);
+  const rows=[];
+  while(true){
+    if(mon.getFullYear()>yr)break;
+    rows.push(new Date(mon));
+    mon=addDays(mon,7);
+  }
+  function yb(val,src){
+    if(!val)return'<span class="yr-unset">—</span>';
+    if(val===HOL)return'<span class="yr-badge b-hol">🏖</span>';
+    if(val===NONE)return'<span class="yr-badge b-none">—</span>';
+    const s=gs(val);
+    return`<span class="yr-badge" style="background:${s.bg};color:${s.text};border:1px solid ${s.bd};">${val}</span>`;
+  }
+  $('yr-tbody').innerHTML=rows.map(mon=>{
+    const tue=addDays(mon,1);const thu=addDays(mon,3);
+    const{v:monV,src:monSrc}=getMonVal(mon);
+    const tueV=state.tueSel[dk(tue)]!==undefined?state.tueSel[dk(tue)]:null;
+    const thuV=state.thuSel[dk(thu)]!==undefined?state.thuSel[dk(thu)]:'VGHTPE';
+    const isCur=mon.getTime()===curMon.getTime();
+    return`<tr class="${isCur?'yr-cur':''}">
+      <td>${fmtS(mon)}</td>
+      <td>${yb(monV,monSrc)}</td>
+      <td>${yb(tueV,'')}</td>
+      <td>${yb(thuV,'')}</td>
+    </tr>`;
+  }).join('');
+}
+window.openYearly=()=>{yrOffset=0;renderYearly();$('yrmo').classList.add('open');};
+window.closeYearly=()=>$('yrmo').classList.remove('open');
+window.yrShift=d=>{yrOffset+=d;renderYearly();};
+$('yrmo').addEventListener('click',e=>{if(e.target===$('yrmo'))window.closeYearly();});
+
 window._ep={
   startEdit(k){editing[k]=true;render();},
   cancelEdit(k){delete editing[k];render();},
@@ -407,22 +491,16 @@ window._ep={
     $('linput').value='';$('lstatus').innerHTML='';
     $('lresult').style.display='none';$('catrow').style.display='none';
     $('catsel').value='--';$('confirmbtn').disabled=true;
-    $('lmo').classList.add('open');
-    setTimeout(()=>$('linput').focus(),80);
+    $('lmo').classList.add('open');setTimeout(()=>$('linput').focus(),80);
   }
 };
-
 window.shiftView=d=>{viewOffset+=d;editing={};render();};
 window.closeLookup=()=>$('lmo').classList.remove('open');
 window.closeMgmt=()=>{$('mgmo').classList.remove('open');render();};
-window.openMgmt=()=>{
-  $('warn').textContent='';$('newname').value='';
-  renderMgmt();$('mgmo').classList.add('open');
-};
-
+window.openMgmt=()=>{$('warn').textContent='';$('newname').value='';renderMgmt();$('mgmo').classList.add('open');};
 function renderMgmt(){
   $('plist').innerHTML=state.physicians.map((p,i)=>{
-    const s=PAL[i%PAL.length];const can=state.physicians.length>1;
+    const s=gs(p);const can=state.physicians.length>1;
     return`<div class="prow"><div class="pleft"><div class="pdot" style="background:${s.dot};"></div><span class="pname">${p}</span></div>
     ${can?`<button class="rmbtn" onclick="removeP(${i})">Remove</button>`:'<span style="font-size:10px;color:#999;">only member</span>'}</div>`;
   }).join('');
@@ -446,8 +524,7 @@ $('lmo').addEventListener('click',e=>{if(e.target===$('lmo'))window.closeLookup(
 async function fetchSheet(){
   if(sheetRows)return sheetRows;
   const r=await fetch(`https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:csv&gid=${SGID}`);
-  const txt=await r.text();
-  const lines=txt.trim().split('\n');
+  const txt=await r.text();const lines=txt.trim().split('\n');
   const parse=l=>{const a=[];let c='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){a.push(c.trim());c='';}else c+=ch;}a.push(c.trim());return a;};
   const hdrs=parse(lines[0]).map(h=>h.replace(/^"|"$/g,'').toLowerCase());
   sheetRows=lines.slice(1).map(l=>{const v=parse(l);const o={};hdrs.forEach((h,i)=>o[h]=(v[i]||'').replace(/^"|"$/g,''));return o;});
