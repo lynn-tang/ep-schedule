@@ -116,6 +116,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .mclose{display:flex;justify-content:flex-end;margin-top:1rem;}
 .bdone{background:#F7FAFC;border:1px solid #CBD8E5;border-radius:6px;padding:6px 18px;font-size:12px;cursor:pointer;color:#1a202c;}
 .warn{font-size:12px;color:#A32D2D;margin-top:4px;min-height:14px;}
+
+/* Audit log */
+.auditbox{background:white;border-radius:10px;border:1px solid #CBD8E5;padding:1.25rem;width:100%;max-width:560px;box-shadow:0 8px 32px rgba(45,90,142,.15);margin:auto;}
+.auditbox h3{font-size:15px;font-weight:600;margin-bottom:.2rem;color:#2D5A8E;}
+.audit-scroll{overflow-y:auto;max-height:55vh;border:1px solid #CBD8E5;border-radius:6px;}
+.audit-table{width:100%;border-collapse:collapse;font-size:11px;}
+.audit-table th{background:#2D5A8E;color:white;padding:6px 8px;font-weight:500;border-bottom:1px solid #1a3d61;text-align:left;position:sticky;top:0;z-index:1;white-space:nowrap;}
+.audit-table td{border-bottom:1px solid #CBD8E5;padding:6px 8px;vertical-align:top;}
+.audit-table tr:last-child td{border-bottom:none;}
+.audit-table tr:nth-child(even) td{background:#F7FAFC;}
+.audit-by{font-weight:600;color:#2D5A8E;}
+.audit-time{color:#999;font-size:10px;white-space:nowrap;}
+.audit-action{color:#1a202c;}
+.audit-empty{color:#999;font-style:italic;padding:12px 8px;font-size:12px;}
+/* Name prompt */
+.namebox{background:white;border-radius:10px;border:1px solid #CBD8E5;padding:1.5rem;width:100%;max-width:340px;box-shadow:0 8px 32px rgba(45,90,142,.15);margin:auto;}
+.namebox h3{font-size:15px;font-weight:600;margin-bottom:.75rem;color:#2D5A8E;}
+@media(max-width:640px){.auditbox{padding:1rem;}}
+
 /* Yearly */
 .yrbox{background:white;border-radius:10px;border:1px solid #CBD8E5;padding:1.25rem;width:100%;max-width:500px;box-shadow:0 8px 32px rgba(45,90,142,.15);margin:auto;}
 .yrbox h3{font-size:15px;font-weight:600;margin-bottom:.2rem;color:#2D5A8E;}
@@ -174,6 +193,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <span class="sync-status sync-ing" id="sync-status">⏳</span>
     <button class="tbtn" id="undo-btn" onclick="doUndo()" disabled>↩ Undo</button>
     <button class="tbtn" id="redo-btn" onclick="doRedo()" disabled>↪ Redo</button>
+    <button class="tbtn" onclick="openAudit()">📋 Log</button>
     <button class="tbtn accent" onclick="openYearly()">📅 Yearly</button>
     <button class="tbtn primary" onclick="window.print()">🖨</button>
     <button class="tbtn" onclick="openMgmt()">👥 Physicians</button>
@@ -334,6 +354,7 @@ onValue(dbRef,snap=>{
   isRemote=false;setSync('ok');
   if(history.length===0){history=[JSON.stringify(state)];historyIdx=0;updateUndoRedo();}
   render();
+  initUser();
 },()=>setSync('error'));
 
 function getMon(d){const r=new Date(d);const dy=r.getDay();r.setDate(r.getDate()+(dy===0?-6:1-dy));r.setHours(0,0,0,0);return r;}
@@ -506,6 +527,81 @@ function renderYearly(){
     </tr>`;
   }).join('');
 }
+
+// ── Audit log ────────────────────────────────────────────────────
+const auditRef=ref(db,'auditLog');
+let currentUser=localStorage.getItem('ep_username')||'';
+
+function initUser(){
+  if(!currentUser){
+    $('namemo').classList.add('open');
+    setTimeout(()=>$('name-input').focus(),100);
+  } else {
+    // Push initial history snapshot if needed
+    if(history.length===0){history=[JSON.stringify(state)];historyIdx=0;updateUndoRedo();}
+  }
+}
+window.confirmName=()=>{
+  const n=$('name-input').value.trim();
+  if(!n)return;
+  currentUser=n;
+  localStorage.setItem('ep_username',n);
+  $('namemo').classList.remove('open');
+};
+$('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')window.confirmName();});
+
+function logAction(action){
+  if(!currentUser)return;
+  const entry={
+    user:currentUser,
+    action,
+    time:new Date().toISOString()
+  };
+  // Read current log, append, keep last 100
+  import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(({get,ref:dbref,set:dbset})=>{
+    const logR=dbref(db,'auditLog');
+    get(logR).then(snap=>{
+      let logs=snap.val()||[];
+      if(!Array.isArray(logs))logs=Object.values(logs);
+      logs.push(entry);
+      if(logs.length>100)logs=logs.slice(-100);
+      dbset(logR,logs);
+    });
+  });
+}
+
+window.openAudit=()=>{
+  renderAudit();
+  $('auditmo').classList.add('open');
+  // Live update
+  import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(({onValue:ov,ref:dbref})=>{
+    ov(dbref(db,'auditLog'),snap=>{
+      if($('auditmo').classList.contains('open')) renderAudit(snap.val());
+    });
+  });
+};
+window.closeAudit=()=>$('auditmo').classList.remove('open');
+$('auditmo').addEventListener('click',e=>{if(e.target===$('auditmo'))window.closeAudit();});
+
+function renderAudit(logs){
+  if(!logs){
+    $('audit-tbody').innerHTML=`<tr><td colspan="3" class="audit-empty">No changes recorded yet.</td></tr>`;
+    return;
+  }
+  const arr=Array.isArray(logs)?logs:Object.values(logs);
+  const sorted=[...arr].reverse();
+  $('audit-tbody').innerHTML=sorted.map(e=>{
+    const d=new Date(e.time);
+    const timeStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+
+      d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    return`<tr>
+      <td class="audit-time">${timeStr}</td>
+      <td class="audit-by">${e.user||'?'}</td>
+      <td class="audit-action">${e.action||''}</td>
+    </tr>`;
+  }).join('');
+}
+
 window.openYearly=()=>{yrOffset=0;renderYearly();$('yrmo').classList.add('open');};
 window.closeYearly=()=>$('yrmo').classList.remove('open');
 window.yrShift=d=>{yrOffset+=d;renderYearly();};
@@ -514,15 +610,15 @@ $('yrmo').addEventListener('click',e=>{if(e.target===$('yrmo'))window.closeYearl
 window._ep={
   startEdit(k){editing[k]=true;render();},
   cancelEdit(k){delete editing[k];render();},
-  applyMon(k,v){pushHistory();state.monSel[k.replace('mon-','')]=v;delete editing[k];save();render();},
-  clearMon(k){pushHistory();delete state.monSel[k.replace('mon-','')];delete editing[k];save();render();},
-  applyTue(k,v){pushHistory();state.tueSel[k.replace('tue-','')]=v;delete editing[k];save();render();},
-  clearTue(k){pushHistory();delete state.tueSel[k.replace('tue-','')];delete editing[k];save();render();},
-  applyThu(k,v){pushHistory();state.thuSel[k.replace('thu-','')]=v;delete editing[k];save();render();},
-  clearThu(k){pushHistory();delete state.thuSel[k.replace('thu-','')];delete editing[k];save();render();},
+  applyMon(k,v){pushHistory();const mk=k.replace('mon-','');state.monSel[mk]=v;delete editing[k];logAction(`Set Mon ${mk} → ${v}`);save();render();},
+  clearMon(k){pushHistory();const mk=k.replace('mon-','');delete state.monSel[mk];delete editing[k];logAction(`Cleared Mon ${mk}`);save();render();},
+  applyTue(k,v){pushHistory();const tk=k.replace('tue-','');state.tueSel[tk]=v;delete editing[k];logAction(`Set Tue ${tk} → ${v}`);save();render();},
+  clearTue(k){pushHistory();const tk=k.replace('tue-','');delete state.tueSel[tk];delete editing[k];logAction(`Cleared Tue ${tk}`);save();render();},
+  applyThu(k,v){pushHistory();const thk=k.replace('thu-','');state.thuSel[thk]=v;delete editing[k];logAction(`Set Thu ${thk} → ${v}`);save();render();},
+  clearThu(k){pushHistory();const thk=k.replace('thu-','');delete state.thuSel[thk];delete editing[k];logAction(`Cleared Thu ${thk}`);save();render();},
   updNum(ck,v){state.caseNums[ck]=v;save();},
   updThu(ck,i,f,v){if(!state.thuCases[ck])state.thuCases[ck]=[];state.thuCases[ck][i][f]=v;save();},
-  rmThu(ck,i){pushHistory();state.thuCases[ck].splice(i,1);save();render();},
+  rmThu(ck,i){pushHistory();state.thuCases[ck].splice(i,1);logAction(`Removed Thu case from ${ck}`);save();render();},
   togExp(ck){expanded[ck]=!expanded[ck];render();},
   openLookup(ck){
     lookupTarget=ck;lookupData=null;
@@ -546,7 +642,8 @@ function renderMgmt(){
 window.removeP=i=>{
   if(state.physicians.length<=1)return;
   pushHistory();
-  state.physicians.splice(i,1);
+  const removedName=state.physicians[i];state.physicians.splice(i,1);
+  logAction(`Removed physician: ${removedName}`);
   // NOTE: intentionally NOT clearing monSel/tueSel/thuSel
   // so existing schedule entries are preserved after removal
   save();renderMgmt();render();
@@ -555,7 +652,7 @@ window.addPhysician=()=>{
   const n=$('newname').value.trim();if(!n)return;
   if(state.physicians.includes(n)){$('warn').textContent=`"${n}" already exists.`;return;}
   pushHistory();state.physicians.push(n);$('newname').value='';$('warn').textContent='';
-  save();renderMgmt();render();
+  logAction(`Added physician: ${n}`);save();renderMgmt();render();
 };
 $('newname').addEventListener('keydown',e=>{if(e.key==='Enter')window.addPhysician();});
 $('mgmo').addEventListener('click',e=>{if(e.target===$('mgmo'))window.closeMgmt();});
@@ -590,8 +687,38 @@ window.confirmCase=()=>{
   if(!lookupData||!lookupTarget)return;
   if(!state.thuCases[lookupTarget])state.thuCases[lookupTarget]=[];
   pushHistory();state.thuCases[lookupTarget].push({...lookupData,catheter:$('catsel').value});
+  logAction(`Added Thu case: ${lookupData.name||lookupData.number}`);
   save();window.closeLookup();render();
 };
 </script>
+
+<!-- Audit log modal -->
+<div class="mo" id="auditmo">
+  <div class="auditbox">
+    <h3>📋 Change Log</h3>
+    <div class="yr-sub">Recent edits — who changed what and when</div>
+    <div class="audit-scroll">
+      <table class="audit-table">
+        <thead><tr><th>Time</th><th>By</th><th>Action</th></tr></thead>
+        <tbody id="audit-tbody"></tbody>
+      </table>
+    </div>
+    <div class="yr-close"><button class="bdone" onclick="closeAudit()">Close</button></div>
+  </div>
+</div>
+
+<!-- Name prompt modal -->
+<div class="mo" id="namemo" style="z-index:300;">
+  <div class="namebox">
+    <h3>👋 Who are you?</h3>
+    <div class="msub">Enter your name so edits can be tracked. This is saved in your browser.</div>
+    <div class="lrow">
+      <input type="text" id="name-input" placeholder="Your name..." maxlength="30"/>
+    </div>
+    <div class="mact">
+      <button class="bconfirm" id="name-confirm" onclick="confirmName()">Continue</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
