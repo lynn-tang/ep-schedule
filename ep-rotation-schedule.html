@@ -172,6 +172,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <span class="week-label" id="view-label">Loading...</span>
     <button class="tbtn" onclick="shiftView(1)">→</button>
     <span class="sync-status sync-ing" id="sync-status">⏳</span>
+    <button class="tbtn" id="undo-btn" onclick="doUndo()" disabled>↩ Undo</button>
+    <button class="tbtn" id="redo-btn" onclick="doRedo()" disabled>↪ Redo</button>
     <button class="tbtn accent" onclick="openYearly()">📅 Yearly</button>
     <button class="tbtn primary" onclick="window.print()">🖨</button>
     <button class="tbtn" onclick="openMgmt()">👥 Physicians</button>
@@ -275,6 +277,37 @@ const SID='1cHiQvAQ0XOV_dKh0dP6w9k8aUPGb22_0FFOhSAS6c-k',SGID='922408137';
 let state={physicians:['Ada','Naiha','VGHTPE'],monSel:{},tueSel:{},thuSel:{},caseNums:{},thuCases:{}};
 let viewOffset=0,editing={},expanded={},yrOffset=0;
 let sheetRows=null,lookupTarget=null,lookupData=null,saveTimer=null,isRemote=false;
+// Undo/Redo history
+let history=[],historyIdx=-1;
+function pushHistory(){
+  const snap=JSON.stringify(state);
+  history=history.slice(0,historyIdx+1);
+  history.push(snap);
+  if(history.length>50)history.shift();
+  historyIdx=history.length-1;
+  updateUndoRedo();
+}
+function updateUndoRedo(){
+  const u=$('undo-btn'),r=$('redo-btn');
+  if(u)u.disabled=historyIdx<=0;
+  if(r)r.disabled=historyIdx>=history.length-1;
+}
+window.doUndo=()=>{
+  if(historyIdx<=0)return;
+  historyIdx--;
+  isRemote=true;
+  state=JSON.parse(history[historyIdx]);
+  isRemote=false;
+  save();updateUndoRedo();render();
+};
+window.doRedo=()=>{
+  if(historyIdx>=history.length-1)return;
+  historyIdx++;
+  isRemote=true;
+  state=JSON.parse(history[historyIdx]);
+  isRemote=false;
+  save();updateUndoRedo();render();
+};
 const $=id=>document.getElementById(id);
 
 function setSync(s){
@@ -298,7 +331,9 @@ onValue(dbRef,snap=>{
     state.monSel=d.monSel||{};state.tueSel=d.tueSel||{};state.thuSel=d.thuSel||{};
     state.caseNums=d.caseNums||{};state.thuCases=d.thuCases||{};
   }
-  isRemote=false;setSync('ok');render();
+  isRemote=false;setSync('ok');
+  if(history.length===0){history=[JSON.stringify(state)];historyIdx=0;updateUndoRedo();}
+  render();
 },()=>setSync('error'));
 
 function getMon(d){const r=new Date(d);const dy=r.getDay();r.setDate(r.getDate()+(dy===0?-6:1-dy));r.setHours(0,0,0,0);return r;}
@@ -479,15 +514,15 @@ $('yrmo').addEventListener('click',e=>{if(e.target===$('yrmo'))window.closeYearl
 window._ep={
   startEdit(k){editing[k]=true;render();},
   cancelEdit(k){delete editing[k];render();},
-  applyMon(k,v){state.monSel[k.replace('mon-','')]=v;delete editing[k];save();render();},
-  clearMon(k){delete state.monSel[k.replace('mon-','')];delete editing[k];save();render();},
-  applyTue(k,v){state.tueSel[k.replace('tue-','')]=v;delete editing[k];save();render();},
-  clearTue(k){delete state.tueSel[k.replace('tue-','')];delete editing[k];save();render();},
-  applyThu(k,v){state.thuSel[k.replace('thu-','')]=v;delete editing[k];save();render();},
-  clearThu(k){delete state.thuSel[k.replace('thu-','')];delete editing[k];save();render();},
+  applyMon(k,v){pushHistory();state.monSel[k.replace('mon-','')]=v;delete editing[k];save();render();},
+  clearMon(k){pushHistory();delete state.monSel[k.replace('mon-','')];delete editing[k];save();render();},
+  applyTue(k,v){pushHistory();state.tueSel[k.replace('tue-','')]=v;delete editing[k];save();render();},
+  clearTue(k){pushHistory();delete state.tueSel[k.replace('tue-','')];delete editing[k];save();render();},
+  applyThu(k,v){pushHistory();state.thuSel[k.replace('thu-','')]=v;delete editing[k];save();render();},
+  clearThu(k){pushHistory();delete state.thuSel[k.replace('thu-','')];delete editing[k];save();render();},
   updNum(ck,v){state.caseNums[ck]=v;save();},
   updThu(ck,i,f,v){if(!state.thuCases[ck])state.thuCases[ck]=[];state.thuCases[ck][i][f]=v;save();},
-  rmThu(ck,i){state.thuCases[ck].splice(i,1);save();render();},
+  rmThu(ck,i){pushHistory();state.thuCases[ck].splice(i,1);save();render();},
   togExp(ck){expanded[ck]=!expanded[ck];render();},
   openLookup(ck){
     lookupTarget=ck;lookupData=null;
@@ -510,14 +545,16 @@ function renderMgmt(){
 }
 window.removeP=i=>{
   if(state.physicians.length<=1)return;
-  const n=state.physicians[i];state.physicians.splice(i,1);
-  [state.monSel,state.tueSel,state.thuSel].forEach(o=>{for(const k in o)if(o[k]===n)delete o[k];});
+  pushHistory();
+  state.physicians.splice(i,1);
+  // NOTE: intentionally NOT clearing monSel/tueSel/thuSel
+  // so existing schedule entries are preserved after removal
   save();renderMgmt();render();
 };
 window.addPhysician=()=>{
   const n=$('newname').value.trim();if(!n)return;
   if(state.physicians.includes(n)){$('warn').textContent=`"${n}" already exists.`;return;}
-  state.physicians.push(n);$('newname').value='';$('warn').textContent='';
+  pushHistory();state.physicians.push(n);$('newname').value='';$('warn').textContent='';
   save();renderMgmt();render();
 };
 $('newname').addEventListener('keydown',e=>{if(e.key==='Enter')window.addPhysician();});
@@ -552,7 +589,7 @@ $('linput').addEventListener('keydown',e=>{if(e.key==='Enter')window.doLookup();
 window.confirmCase=()=>{
   if(!lookupData||!lookupTarget)return;
   if(!state.thuCases[lookupTarget])state.thuCases[lookupTarget]=[];
-  state.thuCases[lookupTarget].push({...lookupData,catheter:$('catsel').value});
+  pushHistory();state.thuCases[lookupTarget].push({...lookupData,catheter:$('catsel').value});
   save();window.closeLookup();render();
 };
 </script>
